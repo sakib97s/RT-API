@@ -1,0 +1,129 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+  Version,
+  VERSION_NEUTRAL,
+} from '@nestjs/common';
+import { ResponsePayload } from 'src/interfaces/response-payload.interface';
+import { AddSettingDto } from './dto/setting.dto';
+import { SettingService } from './setting.service';
+import { MongoIdValidationPipe } from '../../../pipes/mongo-id-validation.pipe';
+import { UserAuthGuard } from '../../user/guards/user-auth.guard';
+import { VendorAuthGuard } from '../../vendor/guards/vendor-auth.guard';
+
+@Controller('setting')
+export class SettingController {
+  private logger = new Logger(SettingController.name);
+
+  constructor(private settingService: SettingService) {}
+
+  /**
+   * addSetting
+   * insertManySetting
+   */
+  @Post('/add')
+  @UsePipes(ValidationPipe)
+  @UseGuards(VendorAuthGuard)
+  async addSetting(
+    @Body()
+    addSettingDto: AddSettingDto,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.addSetting(shop, addSettingDto);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get')
+  async getSetting(
+    @Query('select') select: string,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getSetting(shop, select);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-payment-methods')
+  async getPaymentMethods(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getPaymentMethods(shop);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-delivery-charges')
+  @UsePipes(ValidationPipe)
+  @UseGuards(UserAuthGuard)
+  async getDeliveryCharges(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getDeliveryCharges(shop, req.user);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-chat-link')
+  @UsePipes(ValidationPipe)
+  async getChatLink(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getChatLink(shop);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-advance-payment')
+  @UsePipes(ValidationPipe)
+  async getAdvancePayment(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getAdvancePayment(shop);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-delivery-charges-easy-checkout')
+  @UsePipes(ValidationPipe)
+  async getDeliveryChargesEasyCheckout(
+    @Query('division') division: string,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getDeliveryChargesEasyCheckout(
+      shop,
+      division,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-social-logins')
+  @UsePipes(ValidationPipe)
+  async getSocialLogins(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getSocialLogins(shop);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-offers')
+  async getOffers(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getOffers(shop);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-user-offers')
+  @UsePipes(ValidationPipe)
+  @UseGuards(UserAuthGuard)
+  async getUserOffers(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.settingService.getUserOffers(shop, req.user);
+  }
+}

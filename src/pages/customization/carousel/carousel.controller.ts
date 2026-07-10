@@ -1,0 +1,251 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+  Version,
+  VERSION_NEUTRAL,
+} from '@nestjs/common';
+import { CarouselService } from './carousel.service';
+import {
+  AddCarouselDto,
+  DeleteCarouselDto,
+  FilterAndPaginationCarouselDto,
+  GetCarouselByIdsDto,
+  UpdateCarouselDto,
+} from './dto/carousel.dto';
+import { AdminMetaRoles } from 'src/pages/admin/decorator/admin-roles.decorator';
+import { AdminRoles } from 'src/enum/admin-roles.enum';
+import { AdminRolesGuard } from 'src/pages/admin/guards/admin-roles.guard';
+import { AdminMetaPermissions } from 'src/pages/admin/decorator/admin-permissions.decorator';
+import { AdminPermissions } from 'src/enum/admin-permission.enum';
+import { AdminPermissionGuard } from 'src/pages/admin/guards/admin-permission.guard';
+import { AdminAuthGuard } from 'src/pages/admin/guards/admin-auth.guard';
+import { ResponsePayload } from 'src/interfaces/response-payload.interface';
+import { VendorAuthGuard } from 'src/pages/vendor/guards/vendor-auth.guard';
+import { MongoIdValidationPipe } from 'src/pipes/mongo-id-validation.pipe';
+
+@Controller('carousel')
+export class CarouselController {
+  private logger = new Logger(CarouselController.name);
+
+  constructor(private carouselService: CarouselService) {}
+
+  /**
+   * Public Api
+   * getAllCarouselForUi()
+   * getAllCarouselByShop()
+   * getCarouselBySlug()
+   * getCarouselByIds()
+   */
+  @Get('/get-all-data')
+  @UsePipes(ValidationPipe)
+  async getAllCarouselForUi(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.getAllCarouselForUi(shop);
+  }
+
+  @Post('/get-all-by-shop')
+  @UsePipes(ValidationPipe)
+  async getAllCarouselByShop(
+    @Body() filterCarouselDto: FilterAndPaginationCarouselDto,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Query('q') searchString: string,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.getAllCarouselByShop(
+      shop,
+      filterCarouselDto,
+      searchString,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('/get-by-slug/:slug')
+  async getCarouselBySlug(
+    @Param('slug') slug: string,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Query('select') select: string,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.getCarouselBySlug(shop, slug, select);
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Post('/get-carousels-by-ids')
+  async getCarouselByIds(
+    @Body() getCarouselByIdsDto: GetCarouselByIdsDto,
+    @Query('select') select: string,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.getCarouselByIds(
+      shop,
+      getCarouselByIdsDto,
+      select,
+    );
+  }
+
+  /**
+   * Vendor Secure Api
+   * addCarousel()
+   * getCarouselById()
+   * updateCarouselById()
+   * updateMultipleCarouselById()
+   * deleteMultipleCarouselByIdByVendor()
+   * deleteMultipleTrashCarousel()
+   */
+
+  @Post('/add')
+  @UseGuards(VendorAuthGuard)
+  async addCarousel(
+    @Body()
+    addCarouselDto: AddCarouselDto,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.addCarousel(
+      req.user,
+      shop,
+      addCarouselDto,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Get('get-by-id/:id')
+  @UseGuards(VendorAuthGuard)
+  async getCarouselById(
+    @Param('id', MongoIdValidationPipe) id: string,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Query('select') select: string,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.getCarouselById(
+      req.user,
+      shop,
+      id,
+      select,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Put('/update/:id')
+  @UsePipes(ValidationPipe)
+  @UseGuards(VendorAuthGuard)
+  async updateCarouselById(
+    @Param('id', MongoIdValidationPipe) id: string,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Body() updateCarouselDto: UpdateCarouselDto,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.updateCarouselById(
+      req.user,
+      shop,
+      id,
+      updateCarouselDto,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Put('/update-multiple')
+  @UsePipes(ValidationPipe)
+  @UseGuards(VendorAuthGuard)
+  async updateMultipleCarouselById(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Body() updateCarouselDto: UpdateCarouselDto,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.updateMultipleCarouselById(
+      req.user,
+      shop,
+      updateCarouselDto.ids,
+      updateCarouselDto,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Post('/delete-multiple')
+  @UsePipes(ValidationPipe)
+  @UseGuards(VendorAuthGuard)
+  async deleteMultipleCarouselByIdByVendor(
+    @Body() deleteCarouselDto: DeleteCarouselDto,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.deleteMultipleCarouselByIdByVendor(
+      req.user,
+      shop,
+      deleteCarouselDto.ids,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Post('/delete-multiple-trash')
+  @UsePipes(ValidationPipe)
+  @UseGuards(VendorAuthGuard)
+  async deleteMultipleTrashCarousel(
+    @Body() deleteCarouselDto: DeleteCarouselDto,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.deleteMultipleTrashCarousel(
+      req.user,
+      shop,
+      deleteCarouselDto.ids,
+    );
+  }
+
+  /**
+   * Admin Secure Api
+   * getAllCarousels()
+   * deleteMultipleCarouselById()
+   */
+
+  @Version(VERSION_NEUTRAL)
+  @Post('/get-all')
+  @UsePipes(ValidationPipe)
+  @AdminMetaRoles(AdminRoles.ADMIN, AdminRoles.SUPER_ADMIN, AdminRoles.EDITOR)
+  @UseGuards(AdminRolesGuard)
+  @UseGuards(AdminAuthGuard)
+  async getAllCarousels(
+    @Body() filterCarouselDto: FilterAndPaginationCarouselDto,
+    @Query('q') searchString: string,
+  ): Promise<ResponsePayload> {
+    return this.carouselService.getAllCarousels(
+      filterCarouselDto,
+      searchString,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Post('/delete-multiple-by-admin')
+  @UsePipes(ValidationPipe)
+  @UsePipes(ValidationPipe)
+  @AdminMetaRoles(AdminRoles.SUPER_ADMIN, AdminRoles.ADMIN)
+  @UseGuards(AdminRolesGuard)
+  @AdminMetaPermissions(AdminPermissions.DELETE)
+  @UseGuards(AdminPermissionGuard)
+  @UseGuards(AdminAuthGuard)
+  async deleteMultipleCarouselById(
+    @Body() data: { ids: string[] },
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.deleteMultipleCarouselById(data.ids);
+  }
+
+
+  @Version(VERSION_NEUTRAL)
+  @Post('/delete-all-trash-by-shop')
+  @UsePipes(ValidationPipe)
+  // @UseGuards(AffiliateAuthGuard)
+  async deleteAllTrashByShop(
+    @Query('shop', MongoIdValidationPipe) shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.carouselService.deleteAllTrashByShop(shop);
+  }
+}
