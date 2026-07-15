@@ -29,26 +29,48 @@ export class VendorAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const vendorToken = this.extractTokenFromHeader(request);
+    const adminToken = this.extractAdminTokenFromHeader(request);
 
-    if (!token) {
-      throw new UnauthorizedException();
+    if (vendorToken) {
+      try {
+        const jwtSecret = this.configService.get<string>('vendorJwtSecret');
+        const payload = await this.jwtService.verifyAsync(vendorToken, {
+          secret: jwtSecret,
+        });
+        request['user'] = payload;
+        return true;
+      } catch {
+        // Fall through
+      }
     }
 
-    try {
-      const jwtSecret = this.configService.get<string>('vendorJwtSecret');
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: jwtSecret,
-      });
-      request['user'] = payload;
-    } catch {
-      throw new UnauthorizedException();
+    if (adminToken) {
+      try {
+        const jwtSecret = this.configService.get<string>('adminJwtSecret');
+        const payload = await this.jwtService.verifyAsync(adminToken, {
+          secret: jwtSecret,
+        });
+        request['user'] = payload;
+        return true;
+      } catch {
+        // Fall through
+      }
     }
 
-    return true;
+    throw new UnauthorizedException();
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
     return (request.headers['vendor'] as string) ?? null;
+  }
+
+  private extractAdminTokenFromHeader(request: Request): string | undefined {
+    const legacy = (request.headers['administrator'] as string) ?? null;
+    if (legacy) return legacy;
+    const auth = request.headers.authorization;
+    if (!auth) return undefined;
+    const [type, token] = auth.split(' ');
+    return type === 'Bearer' ? token : undefined;
   }
 }

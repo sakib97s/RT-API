@@ -391,7 +391,7 @@ export class VendorService {
 
           const accessToken = this.jwtService.sign(payload, {
             secret: jwtSecret,
-            expiresIn: expiresInDays,
+            expiresIn: expiresInDays as any,
           });
           // Update Login Info
           await this.vendorModel.findByIdAndUpdate(fVendor._id, {
@@ -495,7 +495,7 @@ export class VendorService {
       );
       const accessToken = this.jwtService.sign(payload, {
         secret: jwtSecret,
-        expiresIn: expiresInDays,
+        expiresIn: expiresInDays as any,
       });
 
       // Find Shops

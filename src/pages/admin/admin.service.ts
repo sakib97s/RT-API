@@ -153,7 +153,7 @@ export class AdminService {
     };
     const accessToken = this.jwtService.sign(payload, {
       secret: jwtSecret,
-      expiresIn: this.getAccessTtl(),
+      expiresIn: this.getAccessTtl() as any,
     });
     return { accessToken };
   }

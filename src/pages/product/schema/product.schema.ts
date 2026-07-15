@@ -1,6 +1,17 @@
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
 import { VARIATION_LIST } from '../../../schema/sub-schema.schema';
+import {
+  LocationSchema,
+  LanguageItemSchema,
+  HighlightSchema,
+  IncludeExcludeSchema,
+  TextItemSchema,
+  FAQSchema,
+  TimeSlotSchema,
+  ItineraryStopSchema,
+  ExtraServiceSchema
+} from './tour-sub-schemas.schema';
 
 export const ProductSchema = new mongoose.Schema(
   {
@@ -88,19 +99,27 @@ export const ProductSchema = new mongoose.Schema(
         required: false,
       },
     },
-    tags: [
-      {
-        _id: {
-          type: Schema.Types.ObjectId,
-          ref: 'Tag',
-          required: false,
+    tags: {
+      type: [
+        {
+          _id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Tag',
+            required: true,
+          },
+          name: {
+            type: String,
+            required: true,
+          },
         },
-        name: {
-          type: String,
-          required: false,
+      ],
+      validate: {
+        validator: function(v: any[]) {
+          return v && v.length > 0;
         },
-      },
-    ],
+        message: 'At least one tag is required'
+      }
+    },
     images: {
       type: [String],
       required: false,
@@ -476,6 +495,168 @@ export const ProductSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+
+    // --- Tour / Experience Specific Fields ---
+    productType: { type: String, enum: ['Tour', 'Activity', 'Ticket', 'Transfer', 'Package', 'Event', 'Hotel', 'Rental', 'Custom'], required: false },
+    bookingStatus: { type: String, enum: ['Available', 'Limited', 'Sold Out', 'Coming Soon', 'Unavailable'], required: false },
+    
+    // Cancellation
+    freeCancellation: { type: Boolean, required: false, default: false },
+    freeCancellationBeforeHours: { type: Number, required: false },
+    nonRefundable: { type: Boolean, required: false, default: false },
+    partialRefund: { type: Boolean, required: false, default: false },
+    refundPercentage: { type: Number, required: false },
+
+    // Schedule
+    scheduleType: { type: String, enum: ['Daily', 'Weekly', 'Monthly', 'Specific Date', 'Custom'], required: false },
+    availableDates: { type: [Date], required: false },
+    specialDates: { type: [Date], required: false },
+    closedDates: { type: [Date], required: false },
+    timeSlots: [TimeSlotSchema],
+
+    // Locations
+    multipleMeetingPoints: [LocationSchema],
+    pickupLocations: [LocationSchema],
+    dropLocations: [LocationSchema],
+    routeStartLocation: { type: LocationSchema, required: false },
+    routeEndLocation: { type: LocationSchema, required: false },
+
+    // Contact & Vendor
+    emergencyContact: { type: String, required: false },
+    phone: { type: String, required: false },
+    email: { type: String, required: false },
+    whatsapp: { type: String, required: false },
+    vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: false },
+    guideId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: false },
+    operatorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: false },
+
+    // Languages
+    languages: [LanguageItemSchema],
+
+    // Basic Tour Info
+    durationValue: { type: Number, required: false },
+    durationUnit: { type: String, required: false },
+    difficulty: { type: String, required: false },
+    accessibility: { type: String, required: false },
+    pickupAvailable: { type: Boolean, required: false, default: false },
+    minimumAge: { type: Number, required: false },
+    maximumAge: { type: Number, required: false },
+    maximumParticipants: { type: Number, required: false },
+    instantConfirmation: { type: Boolean, required: false, default: false },
+    mobileTicket: { type: Boolean, required: false, default: false },
+    skipTheLine: { type: Boolean, required: false, default: false },
+    privateTour: { type: Boolean, required: false, default: false },
+    smallGroup: { type: Boolean, required: false, default: false },
+    wheelchairAccessible: { type: Boolean, required: false, default: false },
+    petFriendly: { type: Boolean, required: false, default: false },
+    outdoor: { type: Boolean, required: false, default: false },
+    indoor: { type: Boolean, required: false, default: false },
+
+    // Pricing
+    priceType: { type: String, enum: ['Per Person', 'Per Group', 'Per Vehicle', 'Per Hour', 'Per Day'], required: false },
+    adultPrice: { type: Number, required: false },
+    youthPrice: { type: Number, required: false },
+    childPrice: { type: Number, required: false },
+    infantPrice: { type: Number, required: false },
+    seniorPrice: { type: Number, required: false },
+    groupPrice: { type: Number, required: false },
+    currency: { type: String, required: false },
+    taxIncluded: { type: Boolean, required: false, default: false },
+    bookingFee: { type: Number, required: false },
+    serviceCharge: { type: Number, required: false },
+    offerStartDate: { type: Date, required: false },
+    offerEndDate: { type: Date, required: false },
+
+    // Inventory
+    totalCapacity: { type: Number, required: false },
+    remainingCapacity: { type: Number, required: false },
+    reservedCapacity: { type: Number, required: false },
+    bookedCapacity: { type: Number, required: false },
+
+    // Tour Guide
+    guideIncluded: { type: Boolean, required: false, default: false },
+    guideName: { type: String, required: false },
+    guideType: { type: String, required: false },
+    certified: { type: Boolean, required: false, default: false },
+
+    // Media
+    thumbnail: { type: String, required: false },
+    bannerImage: { type: String, required: false },
+    coverImage: { type: String, required: false },
+    mapImage: { type: String, required: false },
+    highlightImages: { type: [String], required: false },
+    videoThumbnail: { type: String, required: false },
+    threeSixtyTourUrl: { type: String, required: false },
+    audioGuideUrl: { type: String, required: false },
+    pdfUploadUrl: { type: String, required: false },
+    imageAlt: { type: String, required: false },
+    imageCaption: { type: String, required: false },
+
+    // Dynamic Arrays (Rich Nested)
+    highlights: [HighlightSchema],
+    includes: [IncludeExcludeSchema],
+    excludes: [IncludeExcludeSchema],
+    importantInfo: [TextItemSchema],
+    knowBeforeYouGo: [TextItemSchema],
+    faq: [FAQSchema],
+    itineraryStops: [ItineraryStopSchema],
+    extraServices: [ExtraServiceSchema],
+
+    // Text descriptions
+    cancellationPolicy: { type: String, required: false },
+    keyFeatures: { type: String, required: false },
+
+    // Settings
+    trending: { type: Boolean, required: false, default: false },
+    bestSeller: { type: Boolean, required: false, default: false },
+    newArrival: { type: Boolean, required: false, default: false },
+    recommended: { type: Boolean, required: false, default: false },
+    homepage: { type: Boolean, required: false, default: false },
+    visible: { type: Boolean, required: false, default: true },
+    publish: { type: Boolean, required: false, default: true },
+    draft: { type: Boolean, required: false, default: false },
+    archived: { type: Boolean, required: false, default: false },
+
+    // Publish Settings
+    publishDate: { type: Date, required: false },
+    expireDate: { type: Date, required: false },
+    schedulePublish: { type: Boolean, required: false, default: false },
+
+    // Booking Settings
+    requireBooking: { type: Boolean, required: false, default: false },
+    allowMultipleBooking: { type: Boolean, required: false, default: false },
+    minimumQuantity: { type: Number, required: false },
+    maximumQuantity: { type: Number, required: false },
+    bookingNotice: { type: String, required: false },
+    availabilityType: { type: String, required: false },
+    bookingCutoffTime: { type: String, required: false },
+
+    // Analytics
+    wishlistCount: { type: Number, required: false, default: 0 },
+    shareCount: { type: Number, required: false, default: 0 },
+    clickCount: { type: Number, required: false, default: 0 },
+    conversionCount: { type: Number, required: false, default: 0 },
+
+    // Workflow
+    version: { type: Number, default: 0 },
+    workflowStatus: { type: String, enum: ['Draft', 'Pending Review', 'Approved', 'Rejected', 'Published', 'Archived'], required: false },
+
+    // SEO Extras
+    metaTitle: { type: String, required: false },
+    metaDescription: { type: String, required: false },
+    metaKeywords: { type: String, required: false },
+    ogTitle: { type: String, required: false },
+    ogDescription: { type: String, required: false },
+    ogImage: { type: String, required: false },
+    canonicalUrl: { type: String, required: false },
+    robots: { type: String, required: false },
+    twitterCard: { type: String, required: false },
+
+    // Product Relations
+    relatedProducts: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+    crossSell: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+    upsell: [{ type: Schema.Types.ObjectId, ref: 'Product' }]
+
   },
   {
     versionKey: false,

@@ -92,6 +92,21 @@ export class ProductController {
   }
 
   @Version(VERSION_NEUTRAL)
+  @Get('/preview-by-token/:token')
+  async getPreviewProduct(
+    @Param('token') token: string,
+    @Query('select') select: string,
+  ): Promise<ResponsePayload> {
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('ascii');
+      const id = decoded.replace('preview_', '');
+      return await this.productService.getPreviewProductById(id, select);
+    } catch(err) {
+      return { success: false, message: 'Invalid preview token' };
+    }
+  }
+
+  @Version(VERSION_NEUTRAL)
   @Get('/get-by-slug/:slug')
   async getProductBySlug(
     @Param('slug') slug: string,

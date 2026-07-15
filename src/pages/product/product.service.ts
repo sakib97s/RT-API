@@ -165,8 +165,8 @@ export class ProductService {
         .select('facebookCatalog');
 
       if (
-        fSetting.facebookCatalog &&
-        fSetting.facebookCatalog?.isEnableFacebookCatalog
+        fSetting?.facebookCatalog &&
+        fSetting?.facebookCatalog?.isEnableFacebookCatalog
       ) {
         this.productUpdateOnFbCatalog(shop);
       }
@@ -924,7 +924,7 @@ export class ProductService {
         .findOne({ shop: shop })
         .select('productSetting -_id');
 
-      const tagName = payload['tags.name'];
+      const tagName = payload['tags.name'] || payload?.tags?.name;
       const mFilter: any = { shop: shop };
       // if (filter) {
       //   mFilter = { ...filter, ...mFilter };
@@ -939,9 +939,9 @@ export class ProductService {
       }
 
       let sortQuery: any = {};
-      if (fSetting.productSetting.isEnableSoldQuantitySort) {
+      if (fSetting?.productSetting?.isEnableSoldQuantitySort) {
         sortQuery = { totalSold: -1 };
-      } else if (fSetting.productSetting.isEnablePrioritySort) {
+      } else if (fSetting?.productSetting?.isEnablePrioritySort) {
         sortQuery = { priority: -1 };
       } else {
         sortQuery = { createdAt: -1 };
@@ -1087,7 +1087,26 @@ export class ProductService {
     }
   }
 
+
+  async getPreviewProductById(
+    id: string,
+    select: string,
+  ): Promise<ResponsePayload> {
+    try {
+      const data = await this.productModel.findById(id).select(select);
+      return {
+        success: true,
+        message: 'Success',
+        data,
+      } as ResponsePayload;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async getProductById(
+
     vendor: Vendor,
     shop: string,
     id: string,
@@ -2382,9 +2401,7 @@ export class ProductService {
         );
       }
 
-      await this.productModel.findByIdAndUpdate(id, {
-        $set: finalData,
-      });
+            const filterQuery: any = { _id: id };\n      if (updateProductDto.version !== undefined && updateProductDto.version !== null) {\n        filterQuery.version = updateProductDto.version;\n      }\n      const updateResult = await this.productModel.findOneAndUpdate(\n        filterQuery,\n        {\n          $set: finalData,\n          $inc: { version: 1 }\n        },\n        { new: true }\n      );\n      if (!updateResult) {\n        throw new import('@nestjs/common').HttpException('Conflict: Product has been modified by another user.', 409);\n      }
 
       // Record price history if prices changed
       const newPrice = {
@@ -2401,8 +2418,8 @@ export class ProductService {
         .select('facebookCatalog');
 
       if (
-        fSetting.facebookCatalog &&
-        fSetting.facebookCatalog?.isEnableFacebookCatalog
+        fSetting?.facebookCatalog &&
+        fSetting?.facebookCatalog?.isEnableFacebookCatalog
       ) {
         this.productUpdateOnFbCatalog(shop);
       }
@@ -2447,8 +2464,8 @@ export class ProductService {
         .select('facebookCatalog');
 
       if (
-        fSetting.facebookCatalog &&
-        fSetting.facebookCatalog?.isEnableFacebookCatalog
+        fSetting?.facebookCatalog &&
+        fSetting?.facebookCatalog?.isEnableFacebookCatalog
       ) {
         this.productUpdateOnFbCatalog(shop);
       }
@@ -2561,8 +2578,8 @@ export class ProductService {
         .select('facebookCatalog');
 
       if (
-        fSetting.facebookCatalog &&
-        fSetting.facebookCatalog?.isEnableFacebookCatalog
+        fSetting?.facebookCatalog &&
+        fSetting?.facebookCatalog?.isEnableFacebookCatalog
       ) {
         this.productUpdateOnFbCatalog(shop);
       }
@@ -2632,8 +2649,8 @@ export class ProductService {
         .select('facebookCatalog');
 
       if (
-        fSetting.facebookCatalog &&
-        fSetting.facebookCatalog?.isEnableFacebookCatalog
+        fSetting?.facebookCatalog &&
+        fSetting?.facebookCatalog?.isEnableFacebookCatalog
       ) {
         this.productUpdateOnFbCatalog(shop);
       }
@@ -2673,8 +2690,8 @@ export class ProductService {
         .select('facebookCatalog');
 
       if (
-        fSetting.facebookCatalog &&
-        fSetting.facebookCatalog?.isEnableFacebookCatalog
+        fSetting?.facebookCatalog &&
+        fSetting?.facebookCatalog?.isEnableFacebookCatalog
       ) {
         this.productUpdateOnFbCatalog(shop);
       }

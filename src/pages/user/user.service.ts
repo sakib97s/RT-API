@@ -316,7 +316,7 @@ export class UserService {
 
           const accessToken = this.jwtService.sign(payload, {
             secret: jwtSecret,
-            expiresIn: expiresInDays,
+            expiresIn: expiresInDays as any,
           });
           // Update Login Info
           await this.userModel.findByIdAndUpdate(fUser._id, {
@@ -373,7 +373,7 @@ export class UserService {
 
         const accessToken = this.jwtService.sign(payload, {
           secret: jwtSecret,
-          expiresIn: expiresInDays,
+          expiresIn: expiresInDays as any,
         });
         // Update Login Info
         await this.userModel.findByIdAndUpdate(fUser._id, {

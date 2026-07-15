@@ -58,7 +58,8 @@ export class TagService {
     addTagDto: AddTagDto,
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin ? true : await this.shopModel.exists({
         _id: shop,
         'users._id': vendor._id,
       });
@@ -107,7 +108,7 @@ export class TagService {
   async getAllTagForUi(shop: string): Promise<ResponsePayload> {
     try {
       const data = await this.tagModel
-        .find({ shop: shop, status: 'publish', isShow: true })
+        .find({ shop: shop, status: 'publish' })
         .select('name startDate images bannerType shortDescription')
         .sort({ priority: -1 });
 
@@ -152,7 +153,8 @@ export class TagService {
     select: string,
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin ? true : await this.shopModel.exists({
         _id: shop,
         'users._id': vendor._id,
       });
@@ -527,7 +529,8 @@ export class TagService {
       const { name } = updateTagDto;
 
       // Check vendor access to shop
-      const fShop = await this.shopModel.exists({
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin ? true : await this.shopModel.exists({
         _id: shop,
         'users._id': vendor._id,
       });
@@ -644,7 +647,8 @@ export class TagService {
     updateTagDto: UpdateTagDto,
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin ? true : await this.shopModel.exists({
         _id: shop,
         'users._id': vendor._id,
       });
@@ -689,7 +693,8 @@ export class TagService {
     ids: string[],
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin ? true : await this.shopModel.exists({
         _id: shop,
         'users._id': vendor._id,
       });
@@ -717,7 +722,8 @@ export class TagService {
     ids: string[],
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin ? true : await this.shopModel.exists({
         _id: shop,
         'users._id': vendor._id,
       });
