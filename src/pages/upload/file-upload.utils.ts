@@ -1,25 +1,32 @@
 import { extname, join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
+import { BadRequestException } from '@nestjs/common';
 
 export const imageFileFilter = (req: any, file: any, callback: any) => {
-  if (
-    !file.originalname.match(/\.(jpg|jpeg|png|gif|webp|PNG|JPG|JPEG|GIF|WEBP)$/)
-  ) {
-    return callback(new Error('Only image files are allowed!'), false);
+  const extMatch = file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+  const mimeMatch = file.mimetype && file.mimetype.startsWith('image/');
+  if (!extMatch && !mimeMatch) {
+    return callback(new BadRequestException('Only image files are allowed!'), false);
   }
   callback(null, true);
 };
 
 export const allFileFilter = (req: any, file: any, callback: any) => {
   if (!file.originalname.match(/\.(pdf|PDF|)$/)) {
-    return callback(new Error('Only pdf files are allowed!'), false);
+    return callback(new BadRequestException('Only pdf files are allowed!'), false);
   }
   callback(null, true);
 };
 
 export const editFileName = (req: any, file: any, callback: any) => {
-  const name = transformToSlug(file.originalname.split('.')[0]);
-  const fileExtName = extname(file.originalname);
+  let fileExtName = extname(file.originalname);
+  if (!fileExtName && file.mimetype) {
+    const parts = file.mimetype.split('/');
+    if (parts.length === 2 && parts[0] === 'image') {
+      fileExtName = '.' + parts[1];
+    }
+  }
+  const name = transformToSlug(file.originalname.split('.')[0] || 'image');
   const randomName = Array(4)
     .fill(null)
     .map(() => Math.round(Math.random() * 16).toString(16))

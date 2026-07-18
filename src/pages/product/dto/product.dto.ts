@@ -337,7 +337,8 @@ export class OptionProductDto {
   deleteMany: boolean;
 }
 
-export class UpdateProductDto {\n  @IsOptional() @IsNumber() version?: number;
+export class UpdateProductDto {
+  @IsOptional() @IsNumber() version?: number;
   @IsOptional()
   @IsNotEmpty()
   @IsString()

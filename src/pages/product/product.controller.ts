@@ -35,6 +35,10 @@ import { MongoIdValidationPipe } from 'src/pipes/mongo-id-validation.pipe';
 
 @Controller('product')
 export class ProductController {
+  @Get('/debug-all-products')
+  async debugAllProducts() {
+    return await (this.productService as any).productModelgetAllProducts({}, null);
+  }
   private logger = new Logger(ProductController.name);
 
   constructor(private productService: ProductService) {}
@@ -361,3 +365,9 @@ export class ProductController {
     return { success: true, ...res };
   }
 }
+
+
+
+
+
+

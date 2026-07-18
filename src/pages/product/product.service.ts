@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -2339,7 +2340,7 @@ export class ProductService {
         const fData = await this.productModel.findOne({ _id: id, shop });
 
         if (fData) {
-          if (fData.name.trim() !== name.trim()) {
+          if (name !== undefined && fData.name?.trim() !== name?.trim()) {
             // name change → always generate fresh slug
             const newSlug = this.utilsService.transformToSlug(name);
             const isExists = await this.productModel.exists({
@@ -2365,7 +2366,7 @@ export class ProductService {
         const fData = await this.productModel.findOne({ _id: id, shop });
 
         if (fData) {
-          if (fData.slug.trim() !== slug.trim()) {
+          if (slug !== undefined && fData.slug?.trim() !== slug?.trim()) {
             fSlug = this.utilsService.transformToSlug(slug);
             const isExists = await this.productModel.exists({ slug: fSlug });
 
@@ -2401,7 +2402,27 @@ export class ProductService {
         );
       }
 
-            const filterQuery: any = { _id: id };\n      if (updateProductDto.version !== undefined && updateProductDto.version !== null) {\n        filterQuery.version = updateProductDto.version;\n      }\n      const updateResult = await this.productModel.findOneAndUpdate(\n        filterQuery,\n        {\n          $set: finalData,\n          $inc: { version: 1 }\n        },\n        { new: true }\n      );\n      if (!updateResult) {\n        throw new import('@nestjs/common').HttpException('Conflict: Product has been modified by another user.', 409);\n      }
+
+      const filterQuery: any = { _id: id };
+      if (updateProductDto.version !== undefined && updateProductDto.version !== null) {
+        if (updateProductDto.version === 0) {
+          filterQuery.$or = [{ version: 0 }, { version: { $exists: false } }];
+        } else {
+          filterQuery.version = updateProductDto.version;
+        }
+      }
+      const updateResult = await this.productModel.findOneAndUpdate(
+        filterQuery,
+        {
+          $set: finalData,
+          $inc: { version: 1 }
+        },
+        { new: true }
+      );
+      if (!updateResult) {
+        throw new HttpException('Conflict: Product has been modified by another user.', 409);
+      }
+
 
       // Record price history if prices changed
       const newPrice = {
@@ -3631,3 +3652,6 @@ export class ProductService {
     return m?.[1] || null;
   }
 }
+
+
+

@@ -108,7 +108,7 @@ export class UtilsService {
    * transformToSlug
    */
   transformToSlug(value: string, salt?: boolean): string {
-    let text = value?.toLowerCase()?.trim();
+    let text = value?.toLowerCase()?.trim() || '';
 
     // Space to hyphen
     text = text.replace(/\s+/g, '-');
@@ -747,3 +747,4 @@ export class UtilsService {
     ]);
   }
 }
+

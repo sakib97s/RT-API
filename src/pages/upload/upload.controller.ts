@@ -161,85 +161,97 @@ export class UploadController {
     @Req() req: any,
     @Body() body: any,
   ): Promise<ImageUploadResponse[]> {
-    const isProduction = this.configService.get<boolean>('productionBuild');
-    const prefix = this.configService.get<string>('prefix');
-    const baseurl =
-      req.protocol +
-      `${isProduction ? 's' : ''}://` +
-      req.get('host') +
-      (prefix ? `/${prefix}` : '');
+    try {
+      if (!files) files = [];
+      const isProduction = this.configService.get<boolean>('productionBuild');
+      const prefix = this.configService.get<string>('prefix');
+      const baseurl =
+        req.protocol +
+        `${isProduction ? 's' : ''}://` +
+        req.get('host') +
+        (prefix ? `/${prefix}` : '');
 
-    if (
-      body &&
-      body['convert'] &&
-      body['convert'].toString().toLowerCase() === 'yes'
-    ) {
-      const quality: number = body['quality'] ? Number(body['quality']) : 85;
-      const width: number = body['width'] ? Number(body['width']) : null;
-      const height: number = body['height'] ? Number(body['height']) : null;
-      const dir = shop ? `upload/images/${shop}` : `upload/images/1_global`;
-      const response: ImageUploadResponse[] = [];
+      if (
+        body &&
+        body['convert'] &&
+        body['convert'].toString().toLowerCase() === 'yes'
+      ) {
+        const quality: number = body['quality'] ? Number(body['quality']) : 85;
+        const width: number = body['width'] ? Number(body['width']) : null;
+        const height: number = body['height'] ? Number(body['height']) : null;
+        const dir = shop ? `upload/images/${shop}` : `upload/images/1_global`;
+        const response: ImageUploadResponse[] = [];
 
-      for (const file of files) {
-        const filename = parse(file.filename).name;
-        const extension = parse(file.filename).ext;
-        const newFilename = filename + '.webp';
-        const newPath = `${dir}/${newFilename}`;
+        for (const file of files) {
+          const filename = parse(file.filename).name;
+          const extension = parse(file.filename).ext;
+          const newFilename = filename + '.webp';
+          const newPath = `${dir}/${newFilename}`;
 
-        if (extension?.toLowerCase() !== '.webp') {
-          const { readFileSync } = require('fs');
-          const fileBuffer = readFileSync(file.path);
-          let sharpInstance = sharp(fileBuffer);
-          if (width || height) {
-            sharpInstance = sharpInstance.resize(width, height);
+          if (extension?.toLowerCase() !== '.webp') {
+            const { readFileSync } = require('fs');
+            const fileBuffer = readFileSync(file.path);
+            let sharpInstance = sharp(fileBuffer);
+            if (width || height) {
+              sharpInstance = sharpInstance.resize(width, height);
+            }
+            const metaData = await sharpInstance
+              .webp({ effort: 4, quality: quality })
+              .withMetadata()
+              .toFile(join(dir, newFilename));
+
+            // Delete Images
+            unlinkSync('./' + file.path);
+
+            const fileResponse = {
+              size: this.uploadService.bytesToKb(metaData.size),
+              name: file.filename.split('.')[0],
+              url: `${baseurl}/${newPath}?resolution=${metaData.width}_${metaData.height}`,
+              format: metaData.format,
+              width: metaData.width,
+              height: metaData.height,
+            } as ImageUploadResponse;
+            response.push(fileResponse);
+          } else {
+            const metaData = imageSize(file.path);
+            const fileResponse = {
+              size: this.uploadService.bytesToKb(file.size),
+              name: file.filename.split('.')[0],
+              url: `${baseurl}/${file.path}?resolution=${metaData.width}_${metaData.height}`,
+              format: metaData.type,
+              width: metaData.width,
+              height: metaData.height,
+            } as ImageUploadResponse;
+            response.push(fileResponse);
           }
-          const metaData = await sharpInstance
-            .webp({ effort: 4, quality: quality })
-            .withMetadata()
-            .toFile(join(dir, newFilename));
+        }
 
-          // Delete Images
-          unlinkSync('./' + file.path);
-
-          const fileResponse = {
-            size: this.uploadService.bytesToKb(metaData.size),
-            name: file.filename.split('.')[0],
-            url: `${baseurl}/${newPath}?resolution=${metaData.width}_${metaData.height}`,
-            format: metaData.format,
-            width: metaData.width,
-            height: metaData.height,
-          } as ImageUploadResponse;
-          response.push(fileResponse);
-        } else {
+        return response;
+      } else {
+        const response: ImageUploadResponse[] = [];
+        files.forEach((file) => {
           const metaData = imageSize(file.path);
-          const fileResponse = {
+          const baseurl =
+            req.protocol +
+            `${isProduction ? 's' : ''}://` +
+            req.get('host') +
+            (prefix ? `/${prefix}` : '');
+          const path = file.path;
+          const url = `${baseurl}/${path}?resolution=${metaData.width}_${metaData.height}`;
+          response.push({
             size: this.uploadService.bytesToKb(file.size),
             name: file.filename.split('.')[0],
-            url: `${baseurl}/${file.path}?resolution=${metaData.width}_${metaData.height}`,
+            url,
             format: metaData.type,
             width: metaData.width,
             height: metaData.height,
-          } as ImageUploadResponse;
-          response.push(fileResponse);
-        }
+          } as ImageUploadResponse);
+        });
+        return response;
       }
-
-      return response;
-    } else {
-      const response: ImageUploadResponse[] = [];
-      files.forEach((file) => {
-        const metaData = imageSize(file.path);
-        const fileResponse = {
-          size: this.uploadService.bytesToKb(file.size),
-          name: file.filename.split('.')[0],
-          url: `${baseurl}/${file.path}?resolution=${metaData.width}_${metaData.height}`,
-          format: metaData.type,
-          width: metaData.width,
-          height: metaData.height,
-        } as ImageUploadResponse;
-        response.push(fileResponse);
-      });
-      return response;
+    } catch (e: any) {
+      require('fs').appendFileSync('error.log', String(e.stack) + '\n');
+      throw new InternalServerErrorException(e.message);
     }
   }
 
@@ -256,7 +268,11 @@ export class UploadController {
       null,
       auto,
     );
-    return res.sendFile(file, { root: './upload/images' });
+    return res.sendFile(file, { root: './upload/images' }, (err: any) => {
+      if (err && !res.headersSent) {
+        res.status(404).json({ message: 'Image not found' });
+      }
+    });
   }
 
   @Throttle({ default: { limit: 200, ttl: 60000 } })
@@ -275,7 +291,11 @@ export class UploadController {
       auto,
     );
     // Serve the file
-    return res.sendFile(file, { root: `./upload/images/${folder}` });
+    return res.sendFile(file, { root: `./upload/images/${folder}` }, (err: any) => {
+      if (err && !res.headersSent) {
+        res.status(404).json({ message: 'Image not found' });
+      }
+    });
   }
 
   @Throttle({ default: { limit: 50, ttl: 60000 } })
