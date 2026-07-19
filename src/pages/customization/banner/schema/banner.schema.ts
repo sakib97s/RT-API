@@ -21,6 +21,10 @@ export const BannerSchema = new mongoose.Schema(
       type: [String],
       required: false,
     },
+    videoUrl: {
+      type: String,
+      required: false,
+    },
     url: {
       type: String,
       required: false,

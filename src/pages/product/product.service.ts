@@ -926,17 +926,25 @@ export class ProductService {
         .select('productSetting -_id');
 
       const tagName = payload['tags.name'] || payload?.tags?.name;
-      const mFilter: any = { shop: shop };
-      // if (filter) {
-      //   mFilter = { ...filter, ...mFilter };
-      // }
+
+      console.log('getAllProductForUi payload:', payload);
+
+      // Match exact shop ObjectId OR legacy products without a shop field
+      const mFilter: any = {
+        $or: [
+          { shop: new Types.ObjectId(shop) },
+          { shop: { $exists: false } },
+          { shop: null },
+        ],
+      };
 
       if (status) {
         mFilter.status = status;
       }
 
       if (tagName) {
-        mFilter['tags.name'] = tagName;
+        // Case-insensitive regex match on embedded tag name
+        mFilter['tags.name'] = { $regex: new RegExp(`^${tagName}$`, 'i') };
       }
 
       let sortQuery: any = {};
@@ -1026,12 +1034,16 @@ export class ProductService {
       // } else {
       //   sortQuery = { createdAt: -1 };
       // }
-      // Modify Filter
+      // Modify Filter: match exact shop OR legacy products without a shop field
       const { filter } = filterProductDto;
       filterProductDto.filter = {
-        ...filter,
-        ...{ shop: shop },
-      };
+        ...(filter as any),
+        $or: [
+          { shop: new Types.ObjectId(shop) },
+          { shop: { $exists: false } },
+          { shop: null },
+        ],
+      } as any;
 
       return this.getAllProducts(filterProductDto, searchQuery);
     } catch (error) {
@@ -2203,7 +2215,14 @@ export class ProductService {
   ): Promise<ResponsePayload> {
     try {
       const data = await this.productModel
-        .findOne({ slug: slug, shop: shop })
+        .findOne({
+          slug: slug,
+          $or: [
+            { shop: new Types.ObjectId(shop) },
+            { shop: { $exists: false } },
+            { shop: null },
+          ],
+        })
         .select(select);
 
       // Increment view count
@@ -2411,10 +2430,15 @@ export class ProductService {
           filterQuery.version = updateProductDto.version;
         }
       }
+      // Strip 'version' from $set payload to avoid ConflictingUpdateOperators:
+      // $inc: { version: 1 } already handles the version bump — setting it
+      // explicitly in $set at the same time causes MongoDB error code 40.
+      const { version: _versionField, ...finalDataWithoutVersion } = finalData;
+
       const updateResult = await this.productModel.findOneAndUpdate(
         filterQuery,
         {
-          $set: finalData,
+          $set: finalDataWithoutVersion,
           $inc: { version: 1 }
         },
         { new: true }

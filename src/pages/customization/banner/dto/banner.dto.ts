@@ -32,6 +32,10 @@ export class AddBannerDto {
 
   @IsOptional()
   @IsString()
+  videoUrl: string;
+
+  @IsOptional()
+  @IsString()
   url: string;
 
   @IsOptional()
@@ -80,6 +84,10 @@ export class UpdateBannerDto {
   @IsOptional()
   @IsString()
   image: string;
+
+  @IsOptional()
+  @IsString()
+  videoUrl: string;
 
   @IsOptional()
   @IsString()
