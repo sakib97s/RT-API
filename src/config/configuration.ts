@@ -11,6 +11,7 @@ export default () => ({
   adminJwtSecret: process.env.JWT_PRIVATE_KEY_ADMIN,
   userTokenExpiredTime: 604800,
   adminTokenExpiredTime: 604800,
+  adminAccessTokenTtl: process.env.ADMIN_ACCESS_TOKEN_TTL || '7d',
 
   // SSL PAYMENT CREDENTIALS
   STORE_ID: 'testbox',

@@ -13,6 +13,15 @@ export const BannerSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    description: {
+      type: String,
+      required: false,
+    },
+    textPosition: {
+      type: String,
+      required: false,
+      default: 'left',
+    },
     type: {
       type: String,
       required: false,

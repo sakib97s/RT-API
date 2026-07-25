@@ -3,7 +3,9 @@ import { StatusType } from '../../../../types/all-data-types.type';
 export type Banner = {
   _id?: string;
   title?: string;
+  description?: string;
   type?: string;
+  textPosition?: string;
   image?: string;
   url?: string;
   urlType?: string;

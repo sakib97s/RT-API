@@ -19,9 +19,17 @@ export class AddBannerDto {
   @IsString()
   shop: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   title: string;
+
+  @IsOptional()
+  @IsString()
+  description: string;
+
+  @IsOptional()
+  @IsString()
+  textPosition: string;
 
   @IsOptional()
   @IsString()
@@ -76,6 +84,14 @@ export class UpdateBannerDto {
   @IsOptional()
   @IsString()
   title: string;
+
+  @IsOptional()
+  @IsString()
+  description: string;
+
+  @IsOptional()
+  @IsString()
+  textPosition: string;
 
   @IsOptional()
   @IsString()

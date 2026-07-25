@@ -71,7 +71,7 @@ export class AdminService {
 
   // ================== tokens & cookies (unchanged) ==================
   private getAccessTtl(): string {
-    return this.configService.get<string>('adminAccessTokenTtl') || '15m';
+    return this.configService.get<string>('adminAccessTokenTtl') || '7d';
   }
   private getRefreshTtlDays(): number {
     return Number(this.configService.get('adminRefreshTokenTtlDays') || 30);
