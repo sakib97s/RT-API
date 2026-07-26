@@ -10,7 +10,11 @@ import {
   FAQSchema,
   TimeSlotSchema,
   ItineraryStopSchema,
-  ExtraServiceSchema
+  ExtraServiceSchema,
+  ParticipantTypeSchema,
+  SeasonalDateSchema,
+  RecurringDateSchema,
+  BookingDateSchema
 } from './tour-sub-schemas.schema';
 
 export const ProductSchema = new mongoose.Schema(
@@ -513,6 +517,7 @@ export const ProductSchema = new mongoose.Schema(
     specialDates: { type: [Date], required: false },
     closedDates: { type: [Date], required: false },
     timeSlots: [TimeSlotSchema],
+    bookingDates: [BookingDateSchema],
 
     // Locations
     multipleMeetingPoints: [LocationSchema],
@@ -630,6 +635,35 @@ export const ProductSchema = new mongoose.Schema(
     bookingNotice: { type: String, required: false },
     availabilityType: { type: String, required: false },
     bookingCutoffTime: { type: String, required: false },
+    bookingType: { type: String, enum: ['Instant', 'Request'], required: false, default: 'Instant' },
+    bookingCutoff: { type: String, required: false },
+    minimumBooking: { type: Number, required: false, default: 1 },
+    maximumBooking: { type: Number, required: false },
+    bookingWindow: { type: String, required: false },
+    advanceBooking: { type: String, required: false },
+    bookingConfirmationTime: { type: String, required: false },
+    voucherType: { type: String, enum: ['Mobile', 'Printed'], required: false, default: 'Mobile' },
+    bookingLanguage: { type: String, required: false },
+    bookingNotes: { type: String, required: false },
+
+    // Participant Types & Pricing Engine
+    participantTypes: [ParticipantTypeSchema],
+
+    // Extended Date Management
+    unavailableDates: { type: [Date], required: false },
+    blackoutDates: { type: [Date], required: false },
+    seasonalDates: [SeasonalDateSchema],
+    recurringDates: [RecurringDateSchema],
+
+    // Experience Attributes
+    experienceType: { type: String, required: false },
+    familyFriendly: { type: Boolean, required: false, default: false },
+    luxury: { type: Boolean, required: false, default: false },
+
+    // Media & Virtual Tour Extensions
+    virtualTourUrl: { type: String, required: false },
+    threeSixtyImage: { type: String, required: false },
+    imageSortOrder: { type: Number, required: false, default: 0 },
 
     // Analytics
     wishlistCount: { type: Number, required: false, default: 0 },
@@ -642,15 +676,18 @@ export const ProductSchema = new mongoose.Schema(
     workflowStatus: { type: String, enum: ['Draft', 'Pending Review', 'Approved', 'Rejected', 'Published', 'Archived'], required: false },
 
     // SEO Extras
+    autoSyncSeo: { type: Boolean, required: false, default: true },
     metaTitle: { type: String, required: false },
     metaDescription: { type: String, required: false },
     metaKeywords: { type: String, required: false },
+    metaUrl: { type: String, required: false },
     ogTitle: { type: String, required: false },
     ogDescription: { type: String, required: false },
     ogImage: { type: String, required: false },
     canonicalUrl: { type: String, required: false },
     robots: { type: String, required: false },
     twitterCard: { type: String, required: false },
+    structuredData: { type: String, required: false },
 
     // Product Relations
     relatedProducts: [{ type: Schema.Types.ObjectId, ref: 'Product' }],

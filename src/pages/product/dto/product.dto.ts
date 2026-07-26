@@ -25,7 +25,11 @@ import {
   FAQDto,
   TimeSlotDto,
   ItineraryStopDto,
-  ExtraServiceDto
+  ExtraServiceDto,
+  ParticipantTypeDto,
+  SeasonalDateDto,
+  RecurringDateDto,
+  BookingDateDto
 } from './tour-sub-schemas.dto';
 
 export class AddProductDto {
@@ -174,6 +178,7 @@ export class AddProductDto {
   @IsOptional() @IsArray() @Type(() => Date) specialDates?: Date[];
   @IsOptional() @IsArray() @Type(() => Date) closedDates?: Date[];
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => TimeSlotDto) timeSlots?: TimeSlotDto[];
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => BookingDateDto) bookingDates?: BookingDateDto[];
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => LocationDto) multipleMeetingPoints?: LocationDto[];
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => LocationDto) pickupLocations?: LocationDto[];
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => LocationDto) dropLocations?: LocationDto[];
@@ -274,11 +279,30 @@ export class AddProductDto {
   @IsOptional() @IsString() metaDescription?: string;
   @IsOptional() @IsString() metaKeywords?: string;
   @IsOptional() @IsString() ogTitle?: string;
-  @IsOptional() @IsString() ogDescription?: string;
-  @IsOptional() @IsString() ogImage?: string;
-  @IsOptional() @IsString() canonicalUrl?: string;
-  @IsOptional() @IsString() robots?: string;
-  @IsOptional() @IsString() twitterCard?: string;
+  @IsOptional() @IsString() bookingType?: string;
+  @IsOptional() @IsString() bookingCutoff?: string;
+  @IsOptional() @IsNumber() minimumBooking?: number;
+  @IsOptional() @IsNumber() maximumBooking?: number;
+  @IsOptional() @IsString() bookingWindow?: string;
+  @IsOptional() @IsString() advanceBooking?: string;
+  @IsOptional() @IsString() bookingConfirmationTime?: string;
+  @IsOptional() @IsString() voucherType?: string;
+  @IsOptional() @IsString() bookingLanguage?: string;
+  @IsOptional() @IsString() bookingNotes?: string;
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => ParticipantTypeDto) participantTypes?: ParticipantTypeDto[];
+  @IsOptional() @IsArray() @Type(() => Date) unavailableDates?: Date[];
+  @IsOptional() @IsArray() @Type(() => Date) blackoutDates?: Date[];
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => SeasonalDateDto) seasonalDates?: SeasonalDateDto[];
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => RecurringDateDto) recurringDates?: RecurringDateDto[];
+  @IsOptional() @IsString() experienceType?: string;
+  @IsOptional() @IsBoolean() familyFriendly?: boolean;
+  @IsOptional() @IsBoolean() luxury?: boolean;
+  @IsOptional() @IsString() virtualTourUrl?: string;
+  @IsOptional() @IsString() threeSixtyImage?: string;
+  @IsOptional() @IsNumber() imageSortOrder?: number;
+  @IsOptional() @IsBoolean() autoSyncSeo?: boolean;
+  @IsOptional() @IsString() metaUrl?: string;
+  @IsOptional() @IsString() structuredData?: string;
   @IsOptional() @IsArray() @IsString({ each: true }) relatedProducts?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) crossSell?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) upsell?: string[];
@@ -585,13 +609,30 @@ export class UpdateProductDto {
   @IsOptional() @IsString() workflowStatus?: string;
   @IsOptional() @IsString() metaTitle?: string;
   @IsOptional() @IsString() metaDescription?: string;
-  @IsOptional() @IsString() metaKeywords?: string;
-  @IsOptional() @IsString() ogTitle?: string;
-  @IsOptional() @IsString() ogDescription?: string;
-  @IsOptional() @IsString() ogImage?: string;
-  @IsOptional() @IsString() canonicalUrl?: string;
-  @IsOptional() @IsString() robots?: string;
-  @IsOptional() @IsString() twitterCard?: string;
+  @IsOptional() @IsString() bookingType?: string;
+  @IsOptional() @IsString() bookingCutoff?: string;
+  @IsOptional() @IsNumber() minimumBooking?: number;
+  @IsOptional() @IsNumber() maximumBooking?: number;
+  @IsOptional() @IsString() bookingWindow?: string;
+  @IsOptional() @IsString() advanceBooking?: string;
+  @IsOptional() @IsString() bookingConfirmationTime?: string;
+  @IsOptional() @IsString() voucherType?: string;
+  @IsOptional() @IsString() bookingLanguage?: string;
+  @IsOptional() @IsString() bookingNotes?: string;
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => ParticipantTypeDto) participantTypes?: ParticipantTypeDto[];
+  @IsOptional() @IsArray() @Type(() => Date) unavailableDates?: Date[];
+  @IsOptional() @IsArray() @Type(() => Date) blackoutDates?: Date[];
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => SeasonalDateDto) seasonalDates?: SeasonalDateDto[];
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => RecurringDateDto) recurringDates?: RecurringDateDto[];
+  @IsOptional() @IsString() experienceType?: string;
+  @IsOptional() @IsBoolean() familyFriendly?: boolean;
+  @IsOptional() @IsBoolean() luxury?: boolean;
+  @IsOptional() @IsString() virtualTourUrl?: string;
+  @IsOptional() @IsString() threeSixtyImage?: string;
+  @IsOptional() @IsNumber() imageSortOrder?: number;
+  @IsOptional() @IsBoolean() autoSyncSeo?: boolean;
+  @IsOptional() @IsString() metaUrl?: string;
+  @IsOptional() @IsString() structuredData?: string;
   @IsOptional() @IsArray() @IsString({ each: true }) relatedProducts?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) crossSell?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) upsell?: string[];
