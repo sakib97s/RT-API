@@ -1139,7 +1139,7 @@ export class ProductService {
       }
 
       const data = await this.productModel
-        .findOne({ _id: id, shop: shop })
+        .findOne({ _id: id, $or: [{ shop: shop }, { shop: { $exists: false } }, { shop: null }] })
         .select(select);
 
       return {
