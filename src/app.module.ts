@@ -39,6 +39,7 @@ import { LogReportModule } from './shared/log-report/log-report.module';
 import { SettingModule } from './pages/customization/setting/setting.module';
 import { PaymentControlModule } from './shared/payment-control/payment-control.module';
 import { GtmModule } from './pages/gtm/gtm.module';
+import { TiktokModule } from './pages/tiktok/tiktok.module';
 import { FbCatalogModule } from './shared/fb-catalog/fb-catalog.module';
 import { PrerenderMiddleware } from './middleware/prerender.middleware';
 import { EmailModule } from './shared/email/email.module';
@@ -107,6 +108,7 @@ import { UploadModule } from './pages/upload/upload.module';
     SettingModule,
     PaymentControlModule,
     GtmModule,
+    TiktokModule,
     FbCatalogModule,
     EmailModule,
     TutorialModule,

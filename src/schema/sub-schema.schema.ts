@@ -55,12 +55,12 @@ export const ORDER_ITEM_SCHEMA = new mongoose.Schema(
       insideCity: {
         type: Number,
         required: false,
-        default: 0
+        default: 0,
       },
       outsideCity: {
         type: Number,
         required: false,
-        default: 0
+        default: 0,
       },
       isEnableDeliveryCharge: {
         type: Boolean,
@@ -70,6 +70,11 @@ export const ORDER_ITEM_SCHEMA = new mongoose.Schema(
     quantity: {
       type: Number,
       required: true,
+    },
+    returnQuantity: {
+      type: Number,
+      required: false,
+      default: 0,
     },
     isReview: {
       type: Boolean,
@@ -104,6 +109,14 @@ export const ORDER_ITEM_SCHEMA = new mongoose.Schema(
         type: String,
         required: false,
       },
+    },
+    processingOption: {
+      type: String,
+      required: false,
+    },
+    processingCharge: {
+      type: Number,
+      required: false,
     },
 
     category: {
@@ -158,6 +171,11 @@ export const ORDER_ITEM_SCHEMA = new mongoose.Schema(
     model: {
       type: String,
       required: false,
+    },
+    isPreOrder: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   {
@@ -248,10 +266,6 @@ export const VARIATION_LIST = new mongoose.Schema(
       type: String,
       required: false,
     },
-    barcode: {
-      type: String,
-      required: false,
-    },
     sku: {
       type: String,
       required: false,
@@ -285,22 +299,53 @@ export const VARIATION_LIST = new mongoose.Schema(
       required: false,
       default: 0,
     },
-    lowStockThreshold: {
+    openingStock: {
       type: Number,
       required: false,
-      default: 10,
+      default: 0,
     },
-    expiryDate: {
-      type: Date,
+    physicalStock: {
+      type: Number,
       required: false,
-    },
-    expiryDateString: {
-      type: String,
-      required: false,
+      default: 0,
     },
     image: {
       type: String,
       required: false,
+    },
+    prePromoSalePrice: {
+      type: Number,
+      required: false,
+    },
+    prePromoDiscountType: {
+      type: String,
+      required: false,
+    },
+    prePromoDiscountAmount: {
+      type: Number,
+      required: false,
+    },
+    wholesalePrice: {
+      type: Number,
+      required: false,
+    },
+    minimumWholesaleQuantity: {
+      type: Number,
+      required: false,
+    },
+    maximumWholesaleQuantity: {
+      type: Number,
+      required: false,
+    },
+    isPreOrder: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    rewardPoints: {
+      type: Number,
+      required: false,
+      default: 0,
     },
   },
   {
@@ -525,11 +570,23 @@ export const PAYMENT_METHOD_SETTING = new mongoose.Schema(
       type: String,
       required: false,
     },
+    merchantId: {
+      type: String,
+      required: false,
+    },
+    storeId: {
+      type: String,
+      required: false,
+    },
     production: {
       type: Boolean,
       required: false,
     },
     status: {
+      type: String,
+      required: false,
+    },
+    websiteUrl: {
       type: String,
       required: false,
     },
@@ -631,6 +688,14 @@ export const COURIER_METHOD_SETTING = new mongoose.Schema(
       type: String,
       required: false,
     },
+    paperflykey: {
+      type: String,
+      required: false,
+    },
+    storeName: {
+      type: String,
+      required: false,
+    },
     storeId: {
       type: Number,
       required: false,
@@ -642,6 +707,75 @@ export const COURIER_METHOD_SETTING = new mongoose.Schema(
     status: {
       type: String,
       required: false,
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+export const FRAUD_CHECK_SETTING = new mongoose.Schema(
+  {
+    apiKey: {
+      type: String,
+      required: false,
+    },
+    apiType: {
+      type: String,
+      required: false,
+      enum: ['free', 'pro'],
+      default: 'free',
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+export const EPBX_SETTING = new mongoose.Schema(
+  {
+    isEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    apiToken: {
+      type: String,
+      required: false,
+    },
+    apiBaseUrl: {
+      type: String,
+      required: false,
+      default: 'https://thecolourslight.epbx.bd',
+    },
+    callerId: {
+      type: String,
+      required: false,
+    },
+    agentExtension: {
+      type: String,
+      required: false,
+    },
+    storeName: {
+      type: String,
+      required: false,
+    },
+    customText: {
+      type: String,
+      required: false,
+    },
+    confirmText: {
+      type: String,
+      required: false,
+    },
+    cancelText: {
+      type: String,
+      required: false,
+    },
+    webhookBaseUrl: {
+      type: String,
+      required: false,
+      default: 'https://api-client.saleecom.com',
     },
   },
   {
@@ -689,6 +823,39 @@ export const DELIVERY_CHARGE_SETTING = new mongoose.Schema(
     },
     isAdvancePayment: {
       type: Boolean,
+      required: false,
+    },
+    freeDeliveryMinQty: {
+      type: Number,
+      required: false,
+    },
+    freeDeliveryCategories: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Category',
+      },
+    ],
+    isWeightBased: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    baseWeight: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    extraWeightCharge: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    districtCharges: {
+      type: Schema.Types.Mixed,
+      required: false,
+    },
+    thanaCharges: {
+      type: Schema.Types.Mixed,
       required: false,
     },
   },
@@ -791,8 +958,6 @@ export const NOTE_LIST = new mongoose.Schema(
   },
 );
 
-
-
 export const PRODUCTS_SCHEMA = new mongoose.Schema(
   {
     product: {
@@ -829,5 +994,5 @@ export const PRODUCTS_SCHEMA = new mongoose.Schema(
   },
   {
     _id: false, // Prevents automatic creation of _id for subdocuments
-  }
+  },
 );

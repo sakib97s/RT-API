@@ -6,6 +6,8 @@ import {
   COURIER_METHOD_SETTING,
   DELIVERY_CHARGE_SETTING,
   DOMAIN_SETTING,
+  EPBX_SETTING,
+  FRAUD_CHECK_SETTING,
   OFFER_SETTING,
   PAGE_VIEW_SETTING,
   PAYMENT_METHOD_SETTING,
@@ -46,6 +48,28 @@ export const SettingSchema = new mongoose.Schema(
         type: String,
         required: false,
       },
+      // TikTok Pixel Settings
+      tiktokPixelId: {
+        type: String,
+        required: false,
+      },
+      tiktokAccessToken: {
+        type: String,
+        required: false,
+      },
+      tiktokTestEventCode: {
+        type: String,
+        required: false,
+      },
+      isPurchaseEventOnConfirm: {
+        type: Boolean,
+        required: false,
+      },
+      // Custom Third-Party Tag Manager
+      customTagManagerId: {
+        type: String,
+        required: false,
+      },
     },
     isCashOnDeliveryOff: {
       type: Boolean,
@@ -54,6 +78,21 @@ export const SettingSchema = new mongoose.Schema(
     facebookCatalog: {
       isEnableFacebookCatalog: {
         type: Boolean,
+        required: false,
+      },
+    },
+    bizmation: {
+      isEnable: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      inventoryId: {
+        type: Number,
+        required: false,
+      },
+      apiAccessToken: {
+        type: String,
         required: false,
       },
     },
@@ -133,6 +172,52 @@ export const SettingSchema = new mongoose.Schema(
         type: Number,
         required: false,
       },
+      isEnableDashboardProfit: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnableHrm: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnableProductDetailsWhatsAppOrder: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      isEnableProductDetailsCallOrder: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      isEnableItalyStateWiseOrder: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      selectedItalyStates: {
+        type: [String],
+        required: false,
+        default: [],
+      },
+      isEnableCustomOrderStatus: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      selectedSystemStatuses: {
+        type: [String],
+        required: false,
+        default: [],
+      },
+      customOrderStatuses: [
+        {
+          value: { type: String, required: false },
+          label: { type: String, required: false },
+        }
+      ],
     },
     orderPhoneValidation: {
       isEnableOutsideBd: {
@@ -204,6 +289,10 @@ export const SettingSchema = new mongoose.Schema(
         type: Boolean,
         required: false,
       },
+      isEnableDistrict: {
+        type: Boolean,
+        required: false,
+      },
       deliveryOptionTitle: {
         type: String,
         required: false,
@@ -253,6 +342,11 @@ export const SettingSchema = new mongoose.Schema(
         type: Boolean,
         required: false,
       },
+      isEnableDoublePrice: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
       isEnablePrioritySort: {
         type: Boolean,
         required: false,
@@ -277,7 +371,17 @@ export const SettingSchema = new mongoose.Schema(
         required: false,
         default: false,
       },
+      isEnableProductCallOrderBtn: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
       isEnableProductTestimonial: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnablePreOrder: {
         type: Boolean,
         required: false,
         default: false,
@@ -299,9 +403,18 @@ export const SettingSchema = new mongoose.Schema(
         type: Boolean,
         required: false,
       },
+      isEnableServiceReservation: {
+        type: Boolean,
+        required: false,
+      },
       isHideCostPrice: {
         type: Boolean,
         required: false,
+      },
+      isManagePhysicalStock: {
+        type: Boolean,
+        required: false,
+        default: false,
       },
       isEnableProductCondition: {
         type: Boolean,
@@ -322,12 +435,6 @@ export const SettingSchema = new mongoose.Schema(
         },
       },
 
-      productDetailsText: {
-        type: String,
-        required: false,
-        default: '',
-      },
-
       isCampaignEnable: {
         type: Boolean,
         required: false,
@@ -340,6 +447,40 @@ export const SettingSchema = new mongoose.Schema(
       isEnablePCBuilder: {
         type: Boolean,
         required: false,
+      },
+      isEnableService: {
+        type: Boolean,
+        required: false,
+      },
+      isEnableResell: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnablePortfolio: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnableUnder99Offer: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnableMultipleCategory: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnableTotalSold: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnable3VariationSystem: {
+        type: Boolean,
+        required: false,
+        default: false,
       },
     },
     deliveryCharges: [DELIVERY_CHARGE_SETTING],
@@ -381,6 +522,31 @@ export const SettingSchema = new mongoose.Schema(
         required: false,
       },
     },
+    marketCode: {
+      type: String,
+      required: false,
+      default: 'BD',
+      trim: true,
+    },
+    locale: {
+      type: String,
+      required: false,
+      default: 'bn',
+      trim: true,
+    },
+    taxSettings: {
+      enabled: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+    },
+    shippingModel: {
+      type: String,
+      required: false,
+      default: 'inside-outside-city',
+      trim: true,
+    },
     searchHints: {
       type: String,
       required: false,
@@ -388,6 +554,20 @@ export const SettingSchema = new mongoose.Schema(
     orderLanguage: {
       type: String,
       required: false,
+    },
+    dashboardStyle: {
+      type: String,
+      required: false,
+      default: 'professional',
+    },
+    homePageSettings: {
+      type: Schema.Types.Mixed,
+      required: false,
+    },
+    productControlStyle: {
+      type: String,
+      required: false,
+      default: 'professional',
     },
     googleSearchConsoleToken: {
       type: String,
@@ -424,6 +604,10 @@ export const SettingSchema = new mongoose.Schema(
         type: Boolean,
         required: false,
       },
+      diamondOffer: {
+        type: Boolean,
+        required: false,
+      },
       adminNotification: {
         type: Boolean,
         required: false,
@@ -450,63 +634,277 @@ export const SettingSchema = new mongoose.Schema(
         required: false,
         default: '',
       },
+      diamondOffer: {
+        type: String,
+        required: false,
+        default: '',
+      },
       adminNotification: {
         type: String,
         required: false,
         default: '',
       },
     },
-    fraudChecker: {
-      freeApiKey: {
+    rewardPointSettings: {
+      isEnableRewardPoint: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      rewardPointValue: {
+        type: Number,
+        required: false,
+        default: 100,
+      },
+      rewardPointCurrency: {
+        type: Number,
+        required: false,
+        default: 10,
+      },
+      conversionRate: {
+        type: Number,
+        required: false,
+        default: 0.1, // rewardPointCurrency / rewardPointValue = 10 / 100 = 0.1
+      },
+      usePercentageBasedRewardPoints: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      rewardPointPercentage: {
+        type: Number,
+        required: false,
+        default: 1.0, // 1% of salePrice
+      },
+      calculationMethod: {
+        type: String,
+        required: false,
+        default: 'manual',
+      },
+      exampleSalePrice: {
+        type: Number,
+        required: false,
+        default: 1000,
+      },
+    },
+    defaultUserHasAccess: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    allowUserPhoneChange: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    userPhoneChangeRequireOtp: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    allowUserEmailChange: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    userEmailChangeRequireOtp: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    /** Set once when legacy Mongoose default (OTP on) is corrected to product default (OTP off). */
+    contactChangeOtpDefaultsVersion: {
+      type: Number,
+      required: false,
+    },
+    fraudCheck: FRAUD_CHECK_SETTING,
+    epbx: EPBX_SETTING,
+    diamondOffer: {
+      isEnableDiamondOffer: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      isEnableOnLandingPage: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      threshold: {
+        type: Number,
+        required: false,
+        default: 2000,
+      },
+      notificationText: {
+        type: String,
+        required: false,
+        default: 'Add {{remainingAmount}} Taka more to get the Diamond Offer!',
+      },
+      cartNotificationText: {
+        type: String,
+        required: false,
+        default:
+          'Add More {{remainingAmount}} Taka more to get the Diamond Offer!',
+      },
+      confirmationMessage: {
+        type: String,
+        required: false,
+        default: 'Congratulations! You have qualified for the Diamond Offer.',
+      },
+      diamondMessage: {
+        type: String,
+        required: false,
+        default: 'Congratulations! You have qualified for the Diamond Offer.',
+      },
+      normalMessage: {
+        type: String,
+        required: false,
+        default: 'Thank you for your order.',
+      },
+      startDate: {
         type: String,
         required: false,
       },
-      proApiKey: {
+      endDate: {
+        type: String,
+        required: false,
+      },
+      logo: {
+        type: String,
+        required: false,
+      },
+      title: {
+        type: String,
+        required: false,
+        default: 'Diamond Offer',
+      },
+    },
+    appliedDemoThemeDesign: {
+      demoWebsiteId: {
+        type: Schema.Types.ObjectId,
+        ref: 'DemoWebsite',
+        required: false,
+      },
+      demoName: {
+        type: String,
+        required: false,
+      },
+      themeName: {
+        type: String,
+        required: false,
+      },
+      v2ThemeName: {
+        type: String,
+        required: false,
+      },
+      buildSystemVersion: {
+        type: String,
+        required: false,
+      },
+      appliedAt: {
+        type: Date,
+        required: false,
+      },
+      appliedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'Vendor',
+        required: false,
+      },
+      configVersion: {
+        type: String,
+        required: false,
+      },
+      isCustomizedAfterApply: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+    },
+    brandsPage: {
+      title: {
+        type: String,
+        required: false,
+      },
+      description: {
+        type: String,
+        required: false,
+      },
+      bannerImage: {
+        type: String,
+        required: false,
+      },
+      bannerAlt: {
         type: String,
         required: false,
       },
     },
-    posSettings: {
-      vatPercentage: {
-        type: Number,
-        required: false,
-        default: 0,
-      },
-      taxPercentage: {
-        type: Number,
-        required: false,
-        default: 0,
-      },
-      isAutoCalculateVat: {
+    globalCheckout: {
+      enabled: {
         type: Boolean,
         required: false,
-        default: false,
       },
-      isAutoCalculateTax: {
+      allowedMarkets: [
+        {
+          type: String,
+          required: false,
+        },
+      ],
+      mode: {
+        type: String,
+        enum: ['disabled', 'dry-run', 'live'],
+        required: false,
+      },
+    },
+    globalShipping: {
+      enabled: {
         type: Boolean,
         required: false,
-        default: false,
       },
-      showVat: {
-        type: Boolean,
+      mode: {
+        type: String,
+        enum: ['disabled', 'flat-rate'],
         required: false,
-        default: true,
       },
-      showTax: {
-        type: Boolean,
+      marketCode: {
+        type: String,
         required: false,
-        default: true,
       },
-      showServiceCharge: {
-        type: Boolean,
+      currencyCode: {
+        type: String,
         required: false,
-        default: true,
       },
-      showAit: {
-        type: Boolean,
-        required: false,
-        default: true,
-      },
+      rates: [
+        {
+          id: {
+            type: String,
+            required: false,
+          },
+          name: {
+            type: String,
+            required: false,
+          },
+          deliveryType: {
+            type: String,
+            required: false,
+          },
+          amount: {
+            type: Number,
+            required: false,
+          },
+          currencyCode: {
+            type: String,
+            required: false,
+          },
+          enabled: {
+            type: Boolean,
+            required: false,
+          },
+          estimatedDelivery: {
+            type: String,
+            required: false,
+          },
+        },
+      ],
     },
   },
   {
