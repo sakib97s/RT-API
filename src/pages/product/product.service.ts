@@ -2570,6 +2570,8 @@ export class ProductService {
       )})`;
 
       product.slug = this.utilsService.transformToSlug(product.name, true);
+      
+      product.shop = shop;
 
       delete product._id;
       delete product.createdAt;
