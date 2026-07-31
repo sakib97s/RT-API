@@ -58,6 +58,7 @@ import { ExpenseCategoryModule } from './pages/expense-category/expense-category
 import { AdminModule } from './pages/admin/admin.module';
 import { ScriptModule } from './shared/script/script.module';
 import { UploadModule } from './pages/upload/upload.module';
+import { NewsletterModule } from './pages/newsletter/newsletter.module';
 
 
 @Module({
@@ -124,6 +125,7 @@ import { UploadModule } from './pages/upload/upload.module';
     ExpenseCategoryModule,
     ScriptModule,
     UploadModule,
+    NewsletterModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrerenderMiddleware],
