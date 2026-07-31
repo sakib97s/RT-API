@@ -20,6 +20,18 @@ export const ShopInformationSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    reviewSubtitle: {
+      type: String,
+      required: false,
+    },
+    reviewTitle: {
+      type: String,
+      required: false,
+    },
+    reviewDescription: {
+      type: String,
+      required: false,
+    },
     poweredby: {
       type: String,
       required: false,

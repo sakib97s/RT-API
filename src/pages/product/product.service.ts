@@ -961,7 +961,7 @@ export class ProductService {
       const data = await this.productModel
         .find(mFilter)
         .select(
-          'name variation variationOptions productCondition isEnablePhoneModel variation2Options seoKeyword seoTitle seoDescription variation2 slug tags quantity regularPrice salePrice images variationList isVariation prices ratingCount ratingTotal reviewTotal',
+          'name variation variationOptions productCondition isEnablePhoneModel variation2Options seoKeyword seoTitle seoDescription variation2 slug tags quantity regularPrice salePrice images variationList isVariation prices ratingCount ratingTotal reviewTotal durationValue durationUnit bookingCutoff bookingNotice timeSlots',
         )
         .skip(Number(skip))
         .limit(Number(limit))

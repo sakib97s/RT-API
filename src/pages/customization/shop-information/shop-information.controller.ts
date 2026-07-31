@@ -4,6 +4,7 @@ import {
   Get,
   Logger,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -39,10 +40,27 @@ export class ShopInformationController {
   /**
    * Vendor Secure Api
    * addShopInformation()
+   * updateShopInformation()
    */
   @Post('/add')
   @UseGuards(VendorAuthGuard)
   async addShopInformation(
+    @Body()
+    addShopInformationDto: AddShopInformationDto,
+    @Query('shop', MongoIdValidationPipe) shop: string,
+    @Req() req: any,
+  ): Promise<ResponsePayload> {
+    return await this.shopInformationService.addShopInformation(
+      req.user,
+      shop,
+      addShopInformationDto,
+    );
+  }
+
+  @Version(VERSION_NEUTRAL)
+  @Put(['/update', '/update/:id'])
+  @UseGuards(VendorAuthGuard)
+  async updateShopInformation(
     @Body()
     addShopInformationDto: AddShopInformationDto,
     @Query('shop', MongoIdValidationPipe) shop: string,

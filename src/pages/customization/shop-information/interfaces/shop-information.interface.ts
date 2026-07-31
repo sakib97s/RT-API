@@ -13,6 +13,9 @@ export interface ShopInformation {
   navLogo?: string;
   footerLogo?: string;
   headerNews?: string;
+  reviewSubtitle?: string;
+  reviewTitle?: string;
+  reviewDescription?: string;
   othersLogo?: string;
   whatsappNumber: string;
   color?: string;
