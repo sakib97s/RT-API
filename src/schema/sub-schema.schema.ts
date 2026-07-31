@@ -550,7 +550,7 @@ export const PAYMENT_METHOD_SETTING = new mongoose.Schema(
       type: String,
       required: false,
     },
-    binanceType: {
+    webhookSecret: {
       type: String,
       required: false,
     },
@@ -559,22 +559,6 @@ export const PAYMENT_METHOD_SETTING = new mongoose.Schema(
       required: false,
     },
     secretKey: {
-      type: String,
-      required: false,
-    },
-    username: {
-      type: String,
-      required: false,
-    },
-    password: {
-      type: String,
-      required: false,
-    },
-    merchantId: {
-      type: String,
-      required: false,
-    },
-    storeId: {
       type: String,
       required: false,
     },

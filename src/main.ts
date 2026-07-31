@@ -42,7 +42,14 @@ async function bootstrap() {
   });
 
   // Limit payload size
-  app.use(json({ limit: '50mb' }));
+  app.use(json({ 
+    limit: '50mb',
+    verify: (req: any, res, buf) => {
+      if (req.originalUrl.includes('webhook-stripe')) {
+        req.rawBody = buf;
+      }
+    }
+  }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
   app.use(

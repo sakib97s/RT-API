@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
 import { Response } from 'express';
+import Stripe from 'stripe';
 import { Model, PipelineStage, Types } from 'mongoose';
 import * as schedule from 'node-schedule';
 import {
@@ -964,165 +965,6 @@ export class OrderService {
             data: data,
           } as ResponsePayload;
 
-        case 'Bkash':
-          if (user) {
-            await this.cartModel.deleteMany({
-              _id: { $in: carts.map((m) => new ObjectId(m)) },
-            });
-          }
-          const fMethod = fPaymentMethods.find(
-            (f) => f.providerName === 'Bkash',
-          );
-          if (fMethod && fMethod.providerType === 'api') {
-            const bkashApiConfig: BkashApiConfig = {
-              url: fMethod.production
-                ? 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout'
-                : 'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout',
-              appKey: fMethod.apiKey,
-              appSecret: fMethod.secretKey,
-              username: fMethod.username,
-              password: fMethod.password,
-              production: fMethod.production,
-              callbackURL: fMethod.production
-                ? 'https://api.saleecom.com/api/order/callback-bkash-payment'
-                : 'http://localhost:3013/api/order/callback-bkash-payment',
-              amount:
-                finalOrderData.advancePayment &&
-                  finalOrderData.advancePayment > 0
-                  ? finalOrderData.advancePayment
-                  : finalOrderData.grandTotal,
-              order_Id: saveData._id.toString(),
-            };
-
-            return this.payWithBkash(bkashApiConfig);
-          } else {
-            if (fMethod.providerType !== 'api') {
-              if (
-                saveData &&
-                fOrderNotification &&
-                (fOrderNotification.isEnableSMSNotification ||
-                  fOrderNotification.isEnableEmailNotification)
-              ) {
-                this.orderNotificationForAdmin(
-                  saveData,
-                  fSetting,
-                  fOrderNotification,
-                );
-              }
-              return {
-                success: true,
-                message: 'Success! Order place with cash on delivery.',
-                data: data,
-              } as ResponsePayload;
-            } else {
-              return {
-                success: false,
-                message: 'Sorry! Payment method not found.',
-                data: data,
-              } as ResponsePayload;
-            }
-          }
-
-        case 'Nagad':
-          const fNagadMethod = fPaymentMethods.find(
-            (f) => f.providerName === 'Nagad',
-          );
-          if (fNagadMethod.providerType !== 'api') {
-            if (
-              saveData &&
-              fOrderNotification &&
-              (fOrderNotification.isEnableSMSNotification ||
-                fOrderNotification.isEnableEmailNotification)
-            ) {
-              this.orderNotificationForAdmin(
-                saveData,
-                fSetting,
-                fOrderNotification,
-              );
-            }
-            return {
-              success: true,
-              message: 'Success! Order place with cash on delivery.',
-              data: data,
-            } as ResponsePayload;
-          } else {
-            return {
-              success: false,
-              message: 'Sorry! Payment method not found.',
-              data: data,
-            } as ResponsePayload;
-          }
-
-        case 'Rocket':
-          if (user) {
-            await this.cartModel.deleteMany({
-              _id: { $in: carts.map((m) => new ObjectId(m)) },
-            });
-          }
-          const fRocketMethod = fPaymentMethods.find(
-            (f) => f.providerName === 'Rocket',
-          );
-          if (fRocketMethod.providerType !== 'api') {
-            if (
-              saveData &&
-              fOrderNotification &&
-              (fOrderNotification.isEnableSMSNotification ||
-                fOrderNotification.isEnableEmailNotification)
-            ) {
-              this.orderNotificationForAdmin(
-                saveData,
-                fSetting,
-                fOrderNotification,
-              );
-            }
-            return {
-              success: true,
-              message: 'Success! Order place with cash on delivery.',
-              data: data,
-            } as ResponsePayload;
-          } else {
-            return {
-              success: false,
-              message: 'Sorry! Payment method not found.',
-              data: data,
-            } as ResponsePayload;
-          }
-
-        case 'Binance':
-          if (user) {
-            await this.cartModel.deleteMany({
-              _id: { $in: carts.map((m) => new ObjectId(m)) },
-            });
-          }
-          const fBinanceMethod = fPaymentMethods.find(
-            (f) => f.providerName === 'Binance',
-          );
-          if (fBinanceMethod.providerType !== 'api') {
-            if (
-              saveData &&
-              fOrderNotification &&
-              (fOrderNotification.isEnableSMSNotification ||
-                fOrderNotification.isEnableEmailNotification)
-            ) {
-              this.orderNotificationForAdmin(
-                saveData,
-                fSetting,
-                fOrderNotification,
-              );
-            }
-            return {
-              success: true,
-              message: 'Success! Order place with cash on delivery.',
-              data: data,
-            } as ResponsePayload;
-          } else {
-            return {
-              success: false,
-              message: 'Sorry! Payment method not found.',
-              data: data,
-            } as ResponsePayload;
-          }
-
         case 'Stripe': {
           const fStripeMethod = fPaymentMethods.find(
             (f) => f.providerName === 'Stripe',
@@ -1153,78 +995,6 @@ export class OrderService {
 
           return await this.payWithStripe(stripeConfig);
         }
-
-        case 'SSl Commerz':
-          const fMethodSSL = fPaymentMethods.find(
-            (f) => f.providerName === 'SSl Commerz',
-          );
-          if (fMethodSSL && fMethodSSL.providerType === 'api') {
-            const sslBaseURL = `https://${fMethodSSL.production ? 'securepay' : 'sandbox'
-              }.sslcommerz.com`;
-
-            const callBackBaseUrlSsl = fMethodSSL.production
-              ? 'https://api.saleecom.com'
-              : 'http://localhost:3013';
-
-            const sslCommerzInit: SslCommerzInit = {
-              baseUrl: sslBaseURL,
-              store_id: fMethodSSL.username,
-              store_passwd: fMethodSSL.password,
-              tran_id: saveData._id.toString(),
-              total_amount:
-                finalOrderData.advancePayment &&
-                  finalOrderData.advancePayment > 0
-                  ? finalOrderData.advancePayment
-                  : finalOrderData.grandTotal,
-              currency: 'BDT',
-              // ipn_url: `${callBackBaseUrlSsl}/api/order/callback-ssl-commerz-payment`,
-              success_url: `${callBackBaseUrlSsl}/api/order/callback-ssl-commerz-payment?status=VALID&tran_id=${saveData._id.toString()}`,
-              fail_url: `${callBackBaseUrlSsl}/api/order/callback-ssl-commerz-payment?status=FAILED&tran_id=${saveData._id.toString()}`,
-              cancel_url: `${callBackBaseUrlSsl}/api/order/callback-ssl-commerz-payment?status=CANCELLED&tran_id=${saveData._id.toString()}`,
-              shipping_method: 'Courier',
-
-              // Product
-              product_name: 'E-commerce webiste product',
-              product_category: 'E-commerce',
-              product_profile: 'general',
-
-              // Customer
-              cus_name: finalOrderData?.name ?? 'Unknown',
-              cus_email: finalOrderData?.email ?? 'sakibs.ngn@gmail.com',
-              cus_add1: finalOrderData?.shippingAddress ?? 'Dhaka',
-              cus_add2: '',
-              cus_city: finalOrderData?.division ?? 'Dhaka',
-              cus_state: '',
-              cus_postcode: finalOrderData?.area ?? 'Dhaka',
-              cus_country: 'Bangladesh',
-              cus_phone: finalOrderData?.phoneNo ?? '01773253900',
-              cus_fax: '',
-
-              // Shipping
-              ship_name: 'Default',
-              ship_add1: finalOrderData?.shippingAddress ?? 'Dhaka',
-              ship_add2: '',
-              ship_city: finalOrderData?.division ?? 'Dhaka',
-              ship_state: '',
-              ship_postcode: finalOrderData?.division ?? 'Dhaka',
-              ship_country: 'Bangladesh',
-            };
-            return this.payWithSslCommerz(sslCommerzInit);
-          } else {
-            if (fMethodSSL.providerType !== 'api') {
-              return {
-                success: true,
-                message: 'Success! Order place with cash on delivery.',
-                data: data,
-              } as ResponsePayload;
-            } else {
-              return {
-                success: false,
-                message: 'Sorry! Payment method not found.',
-                data: data,
-              } as ResponsePayload;
-            }
-          }
 
         default:
           return {
@@ -4881,214 +4651,6 @@ export class OrderService {
     }
   }
 
-  /**
-   * Manage Bkash Payment Api
-   * payWithBkash()
-   * callbackBkashPayment()
-   */
-  private async payWithBkash(bkashApiConfig: BkashApiConfig) {
-    try {
-      const { callbackURL, amount, order_Id } = bkashApiConfig;
-      const paymentData: BkashApiConfig = {
-        mode: '0011',
-        payerReference: ' ',
-        callbackURL: callbackURL,
-        amount: amount,
-        currency: 'BDT',
-        intent: 'sale',
-        merchantInvoiceNumber: order_Id,
-      };
-      const finalData: BkashApiConfig = {
-        ...bkashApiConfig,
-        ...paymentData,
-      };
-      const responsePayload =
-        await this.paymentControlService.createBkashPayment(finalData);
-
-      if (responsePayload.data['paymentID']) {
-        await this.orderModel.findByIdAndUpdate(order_Id, {
-          $set: {
-            paymentRefId: responsePayload.data['paymentID'],
-            paymentApiType: 'Bkash',
-            paymentMethod: 'Bkash',
-          },
-        });
-        return {
-          success: true,
-          message: 'Success! Redirecting to the payment page',
-          data: {
-            _id: order_Id,
-            providerName: 'Bkash',
-            providerType: 'api',
-            link: responsePayload.data['bkashURL'],
-          },
-        };
-      } else {
-        return {
-          success: false,
-          message: 'Error! Something went wrong. Please try again.',
-          data: {
-            _id: null,
-            providerName: 'SSl Commerz',
-            link: null,
-          },
-        };
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  async callbackBkashPayment(
-    res: Response,
-    paymentID: string,
-    status: string,
-  ): Promise<any> {
-    try {
-      const fOrder: any = await this.orderModel.findOne({
-        paymentApiType: 'Bkash',
-        paymentRefId: paymentID,
-      });
-
-      const fShopDomain = await this.shopModel
-        .findById(fOrder?.shop)
-        .select('domain subDomain');
-
-      // console.log('process.env.PRODUCTION_BUILD', process.env.PRODUCTION_BUILD);
-      const redirectUrlBase =
-        process.env.PRODUCTION_BUILD === 'true'
-          ? `https://${fShopDomain.domain}`
-          : 'http://localhost:4200';
-
-      // console.log('redirectUrlBase', redirectUrlBase);
-
-      // Setting Data
-      const fSetting = await this.settingModel
-        .findOne({ shop: fOrder?.shop })
-        .select(
-          'smsSendingOption currency smsMethods paymentMethods orderNotification -_id',
-        );
-
-      // Payment Providers
-      const fPaymentMethods = fSetting?.paymentMethods ?? [];
-
-      const fMethod = fPaymentMethods.find((f) => f.providerName === 'Bkash');
-      if (fMethod) {
-        const bkashApiConfig: BkashApiConfig = {
-          url: fMethod.production
-            ? 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout'
-            : 'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout',
-          appKey: fMethod.apiKey,
-          paymentID: paymentID,
-          appSecret: fMethod.secretKey,
-          username: fMethod.username,
-          password: fMethod.password,
-        };
-        if (status === 'success') {
-          const result: any =
-            await this.paymentControlService.executeBkashPayment(
-              bkashApiConfig,
-            );
-          if (result.statusCode === '0000') {
-            if (fOrder.advancePayment && fOrder.advancePayment > 0) {
-              await this.onSuccessfulPayment(
-                {
-                  paidAmount: Number(fOrder.advancePayment ?? 0),
-                  paymentApiTrxID: result.trxID,
-                  paymentMethod: 'Bkash',
-                  advancePaymentStatus: 'paid',
-                },
-                fOrder,
-                fSetting,
-              );
-
-              return res.redirect(
-                `${redirectUrlBase}/success-order?_id=${fOrder?._id}&orderId=${fOrder?.orderId}&message=${result.statusMessage}`,
-              );
-            } else {
-              await this.onSuccessfulPayment(
-                {
-                  paidAmount: Number(result.amount ?? 0),
-                  paymentApiTrxID: result.trxID,
-                  paymentMethod: 'Bkash',
-                  paymentStatus: 'paid',
-                },
-                fOrder,
-                fSetting,
-              );
-
-              return res.redirect(
-                `${redirectUrlBase}/success-order?_id=${fOrder?._id}&orderId=${fOrder?.orderId}&message=${result.statusMessage}`,
-              );
-            }
-          } else {
-            await this.orderModel.findByIdAndDelete(fOrder?._id);
-            return res.redirect(
-              `${redirectUrlBase}/failed-order?message=${result.statusMessage}`,
-            );
-          }
-        } else {
-          await this.orderModel.findByIdAndDelete(fOrder?._id);
-          return res.redirect(
-            `${redirectUrlBase}/failed-order?message=${'Payment failed.'}`,
-          );
-        }
-      } else {
-        return res.redirect(
-          `${redirectUrlBase}/failed-order?message=${'Payment Config failed. No Payment config found.'}`,
-        );
-      }
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException(error.message);
-    }
-  }
-
-  /**
-   * Manage SSL Commerz Payment Api
-   * payWithSslCommerz()
-   * callbackSslCommerzPayment()
-   */
-  private async payWithSslCommerz(sslCommerzInit: SslCommerzInit) {
-    try {
-      const { tran_id } = sslCommerzInit;
-      const responsePayload =
-        await this.paymentControlService.sslCommerzInit(sslCommerzInit);
-
-      if (responsePayload['status'] === 'SUCCESS') {
-        await this.orderModel.findByIdAndUpdate(tran_id, {
-          $set: {
-            paymentRefId: responsePayload['sessionkey'],
-            paymentApiType: 'SSl Commerz',
-            paymentMethod: 'SSl Commerz',
-          },
-        });
-
-        return {
-          success: true,
-          message: 'Success! Redirecting to the payment page',
-          data: {
-            _id: tran_id,
-            providerName: 'SSl Commerz',
-            providerType: 'api',
-            link: responsePayload['GatewayPageURL'],
-          },
-        };
-      } else {
-        return {
-          success: false,
-          message: 'Error! Something went wrong. Please try again.',
-          data: {
-            _id: null,
-            providerName: 'SSl Commerz',
-            link: null,
-          },
-        };
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }
 
   private async payWithStripe(stripeConfig: {
     secretKey: string;
@@ -5122,7 +4684,7 @@ export class OrderService {
         `${Math.round(amount * 100)}`,
       );
       params.append('line_items[0][quantity]', '1');
-      params.append('metadata[orderId]', orderId);
+      params.append('payment_intent_data[metadata][orderId]', orderId);
 
       const response = await axios.post(
         'https://api.stripe.com/v1/checkout/sessions',
@@ -5153,104 +4715,6 @@ export class OrderService {
         message: 'Stripe payment session creation failed',
         data: null,
       };
-    }
-  }
-
-  async callbackSslCommerzPayment(
-    res: Response,
-    tran_id: any,
-    status: string,
-  ): Promise<any> {
-    try {
-      const redirectUrlBase = 'http://localhost:4200';
-
-      // Fetch Order Data
-      const fOrder: any = await this.orderModel.findOne({
-        paymentApiType: 'SSl Commerz',
-        _id: tran_id,
-      });
-
-      // Setting Data
-      const fSetting = await this.settingModel
-        .findOne({ shop: fOrder?.shop })
-        .select(
-          'smsSendingOption currency smsMethods orderNotification paymentMethods -_id',
-        );
-
-      // Payment Providers
-      const fPaymentMethods = fSetting?.paymentMethods ?? [];
-
-      const fMethod = fPaymentMethods.find(
-        (f) => f.providerName === 'SSl Commerz',
-      );
-      if (fMethod) {
-        const sslBaseURL = `https://${fMethod.production ? 'securepay' : 'sandbox'
-          }.sslcommerz.com`;
-
-        const sslCommerzApiConfig: SslCommerzApiConfig = {
-          baseUrl: sslBaseURL,
-          store_id: fMethod.username,
-          store_passwd: fMethod.password,
-          sessionKey: fOrder?.paymentRefId,
-          tran_id: tran_id,
-        };
-        if (status === 'VALID') {
-          const result: any =
-            await this.paymentControlService.transactionQueryBySessionId(
-              sslCommerzApiConfig,
-            );
-          if (result.status === 'VALID') {
-            if (fOrder.advancePayment && fOrder.advancePayment > 0) {
-              await this.onSuccessfulPayment(
-                {
-                  paidAmount: Number(fOrder.advancePayment ?? 0),
-                  paymentApiTrxID: result['bank_tran_id'],
-                  paymentMethod: result['card_type'],
-                  advancePaymentStatus: 'paid',
-                },
-                fOrder,
-                fSetting,
-              );
-
-              return res.redirect(
-                `${redirectUrlBase}/success-order?_id=${fOrder?._id}&orderId=${fOrder?.orderId}&message=${result.statusMessage}`,
-              );
-            } else {
-              await this.onSuccessfulPayment(
-                {
-                  paidAmount: Number(result.amount ?? 0),
-                  paymentApiTrxID: result['bank_tran_id'],
-                  paymentMethod: result['card_type'],
-                  paymentStatus: 'paid',
-                },
-                fOrder,
-                fSetting,
-              );
-
-              return res.redirect(
-                `${redirectUrlBase}/success-order?_id=${fOrder?._id}&orderId=${fOrder?.orderId}&message=${result.statusMessage}`,
-              );
-            }
-          } else {
-            await this.orderModel.findByIdAndDelete(fOrder?._id);
-            return res.redirect(
-              `${redirectUrlBase}/failed-order?message=Payment failed`,
-            );
-          }
-        } else {
-          await this.orderModel.findByIdAndDelete(fOrder?._id);
-          return res.redirect(
-            `${redirectUrlBase}/failed-order?message=Payment failed.`,
-          );
-        }
-      } else {
-        return res.redirect(
-          `${redirectUrlBase}/failed-order?message=Payment Config failed. No Payment config found.`,
-        );
-      }
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -5317,6 +4781,84 @@ export class OrderService {
       }
     } catch (error) {
       console.log(error);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async stripeWebhook(body: any, rawBody: Buffer, signature: string): Promise<any> {
+    try {
+      const eventType = body.type;
+      const data = body.data?.object;
+
+      if (!data) return { success: true };
+
+      let fOrder: any = null;
+      const orderId = data.metadata?.orderId;
+      
+      if (orderId) {
+        fOrder = await this.orderModel.findById(orderId);
+      } else if (data.payment_intent) {
+        fOrder = await this.orderModel.findOne({ paymentApiTrxID: data.payment_intent });
+      }
+
+      if (!fOrder) return { success: true };
+
+      const fSetting = await this.settingModel
+        .findOne({ shop: fOrder?.shop })
+        .select('smsSendingOption currency smsMethods orderNotification paymentMethods -_id');
+
+      const fStripeMethod = fSetting?.paymentMethods?.find(f => f.providerName === 'Stripe');
+      if (!fStripeMethod) return { success: true };
+
+      if (fStripeMethod.webhookSecret && rawBody && signature) {
+        try {
+          const stripe = new Stripe(fStripeMethod.secretKey, { apiVersion: '2024-06-20' as any });
+          stripe.webhooks.constructEvent(rawBody, signature, fStripeMethod.webhookSecret);
+        } catch (err) {
+          console.error('Webhook signature verification failed.', err.message);
+          throw new BadRequestException(`Webhook Error: ${err.message}`);
+        }
+      }
+
+      if (eventType === 'payment_intent.succeeded') {
+        if (fOrder && (fOrder.paymentStatus !== 'paid' && fOrder.advancePaymentStatus !== 'paid')) {
+          if (fOrder.advancePayment && fOrder.advancePayment > 0) {
+              await this.onSuccessfulPayment(
+                {
+                  paidAmount: fOrder?.advancePayment ?? fOrder?.grandTotal,
+                  paymentApiTrxID: data.id,
+                  paymentMethod: 'Stripe',
+                  advancePaymentStatus: 'paid',
+                },
+                fOrder,
+                fSetting,
+              );
+            } else {
+              await this.onSuccessfulPayment(
+                {
+                  paidAmount: fOrder?.advancePayment ?? fOrder?.grandTotal,
+                  paymentApiTrxID: data.id,
+                  paymentMethod: 'Stripe',
+                  paymentStatus: 'paid',
+                },
+                fOrder,
+                fSetting,
+              );
+            }
+          }
+        } else if (eventType === 'payment_intent.payment_failed') {
+        if (orderId && fOrder && fOrder.paymentStatus !== 'paid') {
+           await this.orderModel.findByIdAndDelete(orderId);
+        }
+      } else if (eventType === 'charge.refunded') {
+        if (data.payment_intent && fOrder) {
+          await this.orderModel.findByIdAndUpdate(fOrder._id, { paymentStatus: 'refunded' });
+        }
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.log('Stripe Webhook Error:', error);
       throw new InternalServerErrorException(error.message);
     }
   }

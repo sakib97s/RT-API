@@ -14,6 +14,7 @@ import {
   ValidationPipe,
   Version,
   VERSION_NEUTRAL,
+  Headers,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { MongoIdValidationPipe } from '../../pipes/mongo-id-validation.pipe';
@@ -572,27 +573,7 @@ export class OrderController {
    * callbackBkashPayment()
    * callbackSslCommerzPayment()
    */
-  @Get('/callback-bkash-payment')
-  async callbackBkashPayment(
-    @Res() res: Response,
-    @Query('paymentID') paymentID: string,
-    @Query('status') status: string,
-  ): Promise<ResponsePayload> {
-    return await this.orderService.callbackBkashPayment(res, paymentID, status);
-  }
 
-  @Post('/callback-ssl-commerz-payment')
-  async callbackSslCommerzPayment(
-    @Res() res: Response,
-    @Query('tran_id') tran_id: string,
-    @Query('status') status: string,
-  ): Promise<ResponsePayload> {
-    return await this.orderService.callbackSslCommerzPayment(
-      res,
-      tran_id,
-      status,
-    );
-  }
 
   // order.controller.ts
 
@@ -609,5 +590,14 @@ export class OrderController {
       orderId,
       sessionId,
     );
+  }
+
+  @Post('/webhook-stripe')
+  async stripeWebhook(
+    @Body() body: any,
+    @Req() req: any,
+    @Headers('stripe-signature') signature: string,
+  ): Promise<any> {
+    return this.orderService.stripeWebhook(body, req.rawBody, signature);
   }
 }
