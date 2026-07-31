@@ -679,11 +679,12 @@ export class VendorService {
     filterVendorDto: FilterAndPaginationVendorDto,
     searchQuery?: string,
   ): Promise<ResponsePayload> {
-    const fShop = JSON.parse(
-      JSON.stringify(await this.shopModel.findById(shop).select('owner users')),
-    );
-
-    const mId = fShop.users.map((user: any) => new ObjectId(user._id));
+    const shopDoc = await this.shopModel.findById(shop).select('owner users');
+    if (!shopDoc) {
+      return this.getAllVendors(filterVendorDto, searchQuery);
+    }
+    const fShop = JSON.parse(JSON.stringify(shopDoc));
+    const mId = (fShop.users || []).map((user: any) => new ObjectId(user._id));
 
     const { filter } = filterVendorDto;
     filterVendorDto.filter = { ...filter, ...{ _id: { $in: mId } } };
