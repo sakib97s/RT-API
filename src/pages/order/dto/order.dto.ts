@@ -54,6 +54,10 @@ export class AddOrderDto {
   grandTotal: number;
 
   @IsOptional()
+  @IsNumber()
+  deliveryCharge: number;
+
+  @IsOptional()
   @IsString()
   checkoutDate: string;
 
@@ -159,6 +163,10 @@ export class AddOrderByUserDto {
   grandTotal: number;
 
   @IsOptional()
+  @IsNumber()
+  deliveryCharge: number;
+
+  @IsOptional()
   @IsString()
   checkoutDate: string;
 
@@ -202,6 +210,26 @@ export class AddOrderByUserDto {
   @IsOptional()
   @IsNumber()
   advancePayment: number;
+
+  @IsOptional()
+  @IsString()
+  bookingDate: string;
+
+  @IsOptional()
+  @IsString()
+  bookingTime: string;
+
+  @IsOptional()
+  @IsObject()
+  bookingContact: any;
+
+  @IsOptional()
+  @IsArray()
+  travellers: any[];
+
+  @IsOptional()
+  @IsObject()
+  participantSelections: any;
 }
 
 export class InsertManyOrderDto {

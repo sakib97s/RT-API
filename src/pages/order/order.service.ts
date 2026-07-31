@@ -497,7 +497,7 @@ export class OrderService {
       let fraudCheckerData: any = null;
 
       // Only call fraud checker API if phone number exists
-      if (phoneNo) {
+      if (false && phoneNo) { // FRAUD CHECKER DISABLED BY USER
         try {
           const apiResponse = await this.courierService.checkFraudOrder(
             phoneNo,
@@ -541,13 +541,13 @@ export class OrderService {
         const fProducts = JSON.parse(
           JSON.stringify(
             await this.productModel.find({
-              _id: { $in: carts.map((m) => new ObjectId(m)) },
+              _id: { $in: (carts || []).map((m) => new ObjectId(m)) },
             }),
           ),
         );
 
         if (fProducts && fProducts.length) {
-          cartItems = cartData.map((t1) => ({
+          cartItems = (cartData || []).map((t1) => ({
             ...t1,
             ...{ product: fProducts.find((t2) => t2._id === t1.product) },
           }));
@@ -692,8 +692,8 @@ export class OrderService {
         carts: orderType === 'anonymous' ? [] : carts,
         orderId: orderIdUnique,
         orderedFrom: addOrderByUserDto?.orderFrom,
-        paymentStatus: 'unpaid',
-        orderStatus: 'pending',
+        paymentStatus: (cartItems && cartItems.length) ? 'unpaid' : (addOrderByUserDto?.paymentStatus || 'unpaid'),
+        orderStatus: (cartItems && cartItems.length) ? 'pending' : (addOrderByUserDto?.orderStatus || 'pending'),
         checkoutDate: this.utilsService.getDateString(new Date()),
         checkoutTime: this.utilsService.getCurrentTime(),
         month: this.utilsService.getDateMonth(new Date(), false),
@@ -704,8 +704,8 @@ export class OrderService {
             time: this.utilsService.getCurrentTime(),
           },
         },
-        subTotal: this.cartRegularSubTotal(cartItems),
-        discount: this.cartDiscountAmount(cartItems),
+        subTotal: (cartItems && cartItems.length) ? this.cartRegularSubTotal(cartItems) : (addOrderByUserDto?.subTotal || 0),
+        discount: (cartItems && cartItems.length) ? this.cartDiscountAmount(cartItems) : (addOrderByUserDto?.discount || 0),
 
         // deliveryCharge: fProductSetting.isEnableDeliveryCharge
         //   ? hasZeroDeliveryCharge
@@ -713,7 +713,7 @@ export class OrderService {
         //     : deliveryChargeTotal
         //   : finalDeliveryCharge,
 
-        deliveryCharge: finalDeliveryCharge,
+        deliveryCharge: (cartItems && cartItems.length) ? finalDeliveryCharge : (addOrderByUserDto?.deliveryCharge || 0),
 
         offerDiscount: offerDiscount,
         // grandTotal: this.getOrderGrandTotal(
@@ -727,14 +727,14 @@ export class OrderService {
         //   couponDiscount,
         // ),
 
-        grandTotal: this.getOrderGrandTotal(
+        grandTotal: (cartItems && cartItems.length) ? this.getOrderGrandTotal(
           cartItems,
           finalDeliveryCharge,
           offerDiscount,
           couponDiscount,
-        ),
+        ) : (addOrderByUserDto?.grandTotal || 0),
 
-        orderedItems: products,
+        orderedItems: (cartItems && cartItems.length) ? products : (addOrderByUserDto?.orderedItems || []),
         coupon: coupon ?? null,
         couponDiscount: couponDiscount ?? 0,
         previousOrderCount: previousOrderCounts ?? 0,
@@ -1190,8 +1190,8 @@ export class OrderService {
         carts: carts,
         orderId: orderIdUnique,
         orderedFrom: 'website',
-        paymentStatus: 'unpaid',
-        orderStatus: 'pending',
+        paymentStatus: (cartItems && cartItems.length) ? 'unpaid' : (addOrderByUserDto?.paymentStatus || 'unpaid'),
+        orderStatus: (cartItems && cartItems.length) ? 'pending' : (addOrderByUserDto?.orderStatus || 'pending'),
         checkoutDate: this.utilsService.getDateString(new Date()),
         checkoutTime: this.utilsService.getCurrentTime(),
         month: this.utilsService.getDateMonth(new Date(), false),
@@ -1202,15 +1202,15 @@ export class OrderService {
             time: this.utilsService.getCurrentTime(),
           },
         },
-        subTotal: this.cartRegularSubTotal(cartItems),
-        discount: this.cartDiscountAmount(cartItems),
+        subTotal: (cartItems && cartItems.length) ? this.cartRegularSubTotal(cartItems) : (addOrderByUserDto?.subTotal || 0),
+        discount: (cartItems && cartItems.length) ? this.cartDiscountAmount(cartItems) : (addOrderByUserDto?.discount || 0),
         // deliveryCharge: fProductSetting.isEnableDeliveryCharge
         //   ? hasZeroDeliveryCharge
         //     ? deliveryChargeTotal + finalDeliveryCharge
         //     : deliveryChargeTotal
         //   : finalDeliveryCharge,
 
-        deliveryCharge: finalDeliveryCharge,
+        deliveryCharge: (cartItems && cartItems.length) ? finalDeliveryCharge : (addOrderByUserDto?.deliveryCharge || 0),
 
         offerDiscount: offerDiscount,
         // grandTotal: this.getOrderGrandTotal(
@@ -1224,14 +1224,14 @@ export class OrderService {
         //   couponDiscount,
         // ),
 
-        grandTotal: this.getOrderGrandTotal(
+        grandTotal: (cartItems && cartItems.length) ? this.getOrderGrandTotal(
           cartItems,
           finalDeliveryCharge,
           offerDiscount,
           couponDiscount,
-        ),
+        ) : (addOrderByUserDto?.grandTotal || 0),
 
-        orderedItems: products,
+        orderedItems: (cartItems && cartItems.length) ? products : (addOrderByUserDto?.orderedItems || []),
         coupon: coupon ?? null,
         couponDiscount: couponDiscount ?? 0,
         previousOrderCount: previousOrderCounts ?? 0,

@@ -384,6 +384,26 @@ export const OrderSchema = new mongoose.Schema(
       type: Number,
       required: false,
     },
+    bookingDate: {
+      type: String,
+      required: false,
+    },
+    bookingTime: {
+      type: String,
+      required: false,
+    },
+    bookingContact: {
+      type: Schema.Types.Mixed,
+      required: false,
+    },
+    travellers: {
+      type: Schema.Types.Mixed,
+      required: false,
+    },
+    participantSelections: {
+      type: Schema.Types.Mixed,
+      required: false,
+    },
   },
   {
     versionKey: false,
