@@ -4,7 +4,7 @@ export default () => ({
   port: parseInt(process.env.PORT, 10) || 3000,
   mongoCluster:
     process.env.PRODUCTION_BUILD === 'true'
-      ? `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOSTNAME}:${process.env.DB_PORT}/${process.env.DB_NAME}?authSource=${process.env.AUTH_SOURCE}&replicaSet=${process.env.MONGO_REPLICA_SET}`
+      ? `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@127.0.0.1:${process.env.DB_PORT}/${process.env.DB_NAME}?authSource=${process.env.AUTH_SOURCE}`
       : `mongodb://sakibsmsit:6Nle8Ejs10vd8KNd@ac-uyuzhlb-shard-00-00.v2sc77r.mongodb.net:27017,ac-uyuzhlb-shard-00-01.v2sc77r.mongodb.net:27017,ac-uyuzhlb-shard-00-02.v2sc77r.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-mysmt6-shard-0&authSource=admin&retryWrites=true&w=majority`,
 
   userJwtSecret: process.env.JWT_PRIVATE_KEY_USER,
@@ -38,8 +38,8 @@ export default () => ({
   smsSenderSecret: 'C200032065f01a6a427279.06759627-',
   smsSenderPassword: 'YV6H7B8N-',
   smsSenderId: 'GuardianPub-',
-  dbAdminUsername: 'ikbalsazib11-',
-  dbAdminPassword: 'IKBALsazib11-',
+  dbAdminUsername: 'tradition',
+  dbAdminPassword: 'Tradition26',
   backupDB: process.env.DB_NAME,
   backupPath: './backup/db',
   restorePath: `./restore/${process.env.DB_NAME}`,

@@ -1168,14 +1168,22 @@ export class AdminService {
       }
 
       // Check Username
-      if (username) {
-        const isExists = await this.adminModel.findOne({ username });
+      if (
+        username &&
+        username.trim().toLowerCase() !== user.username?.trim().toLowerCase()
+      ) {
+        const isExists = await this.adminModel.findOne({
+          username: { $regex: new RegExp(`^${username.trim()}$`, 'i') },
+          _id: { $ne: user._id },
+        });
         if (isExists) {
           return {
             success: false,
             message: 'Username already exists',
           } as ResponsePayload;
         }
+      } else {
+        delete updateAdminDto.username;
       }
       // Check Password
       if (password) {

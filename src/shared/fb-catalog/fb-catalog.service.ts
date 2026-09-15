@@ -43,7 +43,7 @@ export class FbCatalogService {
   }
 
   public async addFbCatalogProducts(shop: string) {
-    const cdnUrlBase = this.configService.get<string>('cdnUrlBase'); // e.g., http://localhost:3013
+    const cdnUrlBase = this.configService.get<string>('cdnUrlBase'); // e.g., http://localhost:3015
     const apiUrl = `${cdnUrlBase}/upload/csv-product-upload`;
 
     try {

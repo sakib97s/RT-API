@@ -990,7 +990,7 @@ export class OrderService {
             orderId: saveData._id.toString(),
             baseUrl: fStripeMethod.production
               ? 'https://api.saleecom.com'
-              : 'http://localhost:3013',
+              : 'http://localhost:3015',
           };
 
           return await this.payWithStripe(stripeConfig);
@@ -4794,7 +4794,7 @@ export class OrderService {
 
       let fOrder: any = null;
       const orderId = data.metadata?.orderId;
-      
+
       if (orderId) {
         fOrder = await this.orderModel.findById(orderId);
       } else if (data.payment_intent) {
@@ -4823,32 +4823,32 @@ export class OrderService {
       if (eventType === 'payment_intent.succeeded') {
         if (fOrder && (fOrder.paymentStatus !== 'paid' && fOrder.advancePaymentStatus !== 'paid')) {
           if (fOrder.advancePayment && fOrder.advancePayment > 0) {
-              await this.onSuccessfulPayment(
-                {
-                  paidAmount: fOrder?.advancePayment ?? fOrder?.grandTotal,
-                  paymentApiTrxID: data.id,
-                  paymentMethod: 'Stripe',
-                  advancePaymentStatus: 'paid',
-                },
-                fOrder,
-                fSetting,
-              );
-            } else {
-              await this.onSuccessfulPayment(
-                {
-                  paidAmount: fOrder?.advancePayment ?? fOrder?.grandTotal,
-                  paymentApiTrxID: data.id,
-                  paymentMethod: 'Stripe',
-                  paymentStatus: 'paid',
-                },
-                fOrder,
-                fSetting,
-              );
-            }
+            await this.onSuccessfulPayment(
+              {
+                paidAmount: fOrder?.advancePayment ?? fOrder?.grandTotal,
+                paymentApiTrxID: data.id,
+                paymentMethod: 'Stripe',
+                advancePaymentStatus: 'paid',
+              },
+              fOrder,
+              fSetting,
+            );
+          } else {
+            await this.onSuccessfulPayment(
+              {
+                paidAmount: fOrder?.advancePayment ?? fOrder?.grandTotal,
+                paymentApiTrxID: data.id,
+                paymentMethod: 'Stripe',
+                paymentStatus: 'paid',
+              },
+              fOrder,
+              fSetting,
+            );
           }
-        } else if (eventType === 'payment_intent.payment_failed') {
+        }
+      } else if (eventType === 'payment_intent.payment_failed') {
         if (orderId && fOrder && fOrder.paymentStatus !== 'paid') {
-           await this.orderModel.findByIdAndDelete(orderId);
+          await this.orderModel.findByIdAndDelete(orderId);
         }
       } else if (eventType === 'charge.refunded') {
         if (data.payment_intent && fOrder) {

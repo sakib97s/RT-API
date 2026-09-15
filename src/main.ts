@@ -19,14 +19,14 @@ async function bootstrap() {
       'http://localhost:42005',
       'http://localhost:42006',
       'http://localhost:3004',
-      'http://localhost:3013',
+      'http://localhost:3015',
       'http://localhost:3001',
       'http://localhost:3003',
-      'https://cutecares.com',
-      'https://pos.cutecares.com',
-      'https://cutecares.com',
-      'https://www.cutecares.com',
-      'https://admin.cutecares.com',
+      'https://romeempiretours.com',
+      'https://pos.romeempiretours.com',
+      'https://romeempiretours.com',
+      'https://www.romeempiretours.com',
+      'https://admin.romeempiretours.com',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: '*',
@@ -42,7 +42,7 @@ async function bootstrap() {
   });
 
   // Limit payload size
-  app.use(json({ 
+  app.use(json({
     limit: '50mb',
     verify: (req: any, res, buf) => {
       if (req.originalUrl.includes('webhook-stripe')) {

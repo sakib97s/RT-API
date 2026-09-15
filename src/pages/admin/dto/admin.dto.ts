@@ -184,6 +184,10 @@ export class UpdateAdminDto {
   email: string;
 
   @IsOptional()
+  @IsString()
+  profileImg: string;
+
+  @IsOptional()
   @IsBoolean()
   hasAccess: string;
 

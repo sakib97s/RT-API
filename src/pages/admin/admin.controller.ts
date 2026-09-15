@@ -223,6 +223,7 @@ export class AdminController {
   @Put('/update-logged-in-admin')
   @UsePipes(ValidationPipe)
   @UseGuards(AdminPermissionGuard)
+  @UseGuards(AdminAuthGuard)
   async updateLoggedInAdminInfo(
     @Req() req: any,
     @Body() updateAdminDto: UpdateAdminDto,
