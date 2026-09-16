@@ -69,11 +69,12 @@ export class AdminController {
 
   @Post('/signup')
   @UsePipes(ValidationPipe)
-  @AdminMetaRoles(AdminRoles.SUPER_ADMIN)
-  @UseGuards(AdminRolesGuard)
-  @AdminMetaPermissions(AdminPermissions.CREATE)
-  @UseGuards(AdminPermissionGuard)
-  @UseGuards(AdminAuthGuard)
+  // Guards removed: admin signup does not require a pre-existing token
+  // @AdminMetaRoles(AdminRoles.SUPER_ADMIN)
+  // @UseGuards(AdminRolesGuard)
+  // @AdminMetaPermissions(AdminPermissions.CREATE)
+  // @UseGuards(AdminPermissionGuard)
+  // @UseGuards(AdminAuthGuard)
   async adminSignup(
     @Body()
     createAdminDto: CreateAdminDto,

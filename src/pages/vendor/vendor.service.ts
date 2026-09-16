@@ -178,15 +178,18 @@ export class VendorService {
 
         if (shops && shops.length) {
           for (const shop of shops) {
-            await this.shopModel.findByIdAndUpdate(shop._id, {
-              $addToSet: {
-                users: {
-                  _id: saveData._id,
-                  username: saveData.username,
-                  role: saveData.role,
+            const shopId = typeof shop === 'string' ? shop : shop?._id;
+            if (shopId) {
+              await this.shopModel.findByIdAndUpdate(shopId, {
+                $addToSet: {
+                  users: {
+                    _id: saveData._id,
+                    username: saveData.username,
+                    role: saveData.role,
+                  },
                 },
-              },
-            });
+              });
+            }
           }
         }
 
@@ -204,7 +207,7 @@ export class VendorService {
       }
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(error?.message || 'Internal Server Error');
     }
   }
 

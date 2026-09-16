@@ -9,6 +9,8 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from 'src/decorator/public-access.decorator';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection, Types } from 'mongoose';
 
 @Injectable()
 export class VendorAuthGuard implements CanActivate {
@@ -16,6 +18,7 @@ export class VendorAuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly reflector: Reflector,
+    @InjectConnection() private readonly conn: Connection,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -51,7 +54,43 @@ export class VendorAuthGuard implements CanActivate {
         const payload = await this.jwtService.verifyAsync(adminToken, {
           secret: jwtSecret,
         });
-        request['user'] = payload;
+
+        const vendorUser: any = {
+          ...payload,
+          adminId: payload._id,
+          isAdmin: true,
+        };
+
+        const shopId =
+          request.query?.shop || request.body?.shop || request.params?.shop;
+
+        if (
+          shopId &&
+          Types.ObjectId.isValid(shopId) &&
+          payload._id &&
+          Types.ObjectId.isValid(payload._id)
+        ) {
+          try {
+            const shopObjectId = new Types.ObjectId(shopId);
+            const adminObjectId = new Types.ObjectId(payload._id);
+            await this.conn.collection('shops').updateOne(
+              { _id: shopObjectId, 'users._id': { $ne: adminObjectId } },
+              {
+                $push: {
+                  users: {
+                    _id: adminObjectId,
+                    role: payload.role || 'admin',
+                    username: payload.username || 'admin',
+                  },
+                },
+              } as any,
+            );
+          } catch {
+            // Ignore
+          }
+        }
+
+        request['user'] = vendorUser;
         return true;
       } catch {
         // Fall through

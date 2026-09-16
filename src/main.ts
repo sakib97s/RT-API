@@ -57,6 +57,15 @@ async function bootstrap() {
     express.static(join(__dirname, '..', 'upload/static')),
   );
 
+  // Rewrite /upload requests (e.g. /upload/images/...) if global prefix is configured
+  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const prefix = process.env.PREFIX || 'api';
+    if (prefix && req.url.startsWith('/upload/') && !req.url.startsWith('/upload/static')) {
+      req.url = `/${prefix}${req.url}`;
+    }
+    next();
+  });
+
   // Global prefix for API routes
   if (process.env.PREFIX) {
     app.setGlobalPrefix(process.env.PREFIX);

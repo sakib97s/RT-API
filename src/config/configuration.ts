@@ -1,5 +1,6 @@
 export default () => ({
   productionBuild: process.env.PRODUCTION_BUILD === 'true',
+  prefix: process.env.PREFIX || 'api',
   hostname: `http://localhost:${process.env.PORT || 3000}`,
   port: parseInt(process.env.PORT, 10) || 3000,
   mongoCluster:
@@ -38,8 +39,8 @@ export default () => ({
   smsSenderSecret: 'C200032065f01a6a427279.06759627-',
   smsSenderPassword: 'YV6H7B8N-',
   smsSenderId: 'GuardianPub-',
-  dbAdminUsername: 'tradition',
-  dbAdminPassword: 'Tradition26',
+  dbAdminUsername: 'ikbalsazib11',
+  dbAdminPassword: 'IKBALsazib11',
   backupDB: process.env.DB_NAME,
   backupPath: './backup/db',
   restorePath: `./restore/${process.env.DB_NAME}`,

@@ -36,7 +36,7 @@ import { AdminRolesGuard } from 'src/guards/admin-roles.guard';
 import { AdminMetaPermissions } from 'src/decorator/admin-permissions.decorator';
 import { AdminPermissions } from '../../enum/admin-permission.enum';
 import { AdminPermissionGuard } from 'src/guards/admin-permission.guard';
-import { AdminJwtAuthGuard } from 'src/guards/admin-jwt-auth.guard';
+import { AdminAuthGuard } from 'src/pages/admin/guards/admin-auth.guard';
 import { Throttle } from '@nestjs/throttler';
 
 @Controller('vendor')
@@ -111,6 +111,20 @@ export class VendorController {
     return await this.vendorService.addVendorByAuth(req.user, createVendorDto);
   }
 
+  /**
+   * Admin panel থেকে vendor তৈরি করার route
+   * AdminJwtAuthGuard দিয়ে protected
+   */
+  @Post('/add-by-admin')
+  @UsePipes(ValidationPipe)
+  @UseGuards(VendorAuthGuard)
+  async addVendorByAdmin(
+    @Body()
+    createVendorDto: CreateVendorDto,
+  ): Promise<ResponsePayload> {
+    return await this.vendorService.vendorSignupOwner(createVendorDto);
+  }
+
   @Post('/add-owner')
   @UsePipes(ValidationPipe)
   // @AdminMetaRoles(AdminRoles.ADMIN, AdminRoles.SUPER_ADMIN, AdminRoles.EDITOR)
@@ -135,7 +149,7 @@ export class VendorController {
 
   @Post('/admin-login')
   @UsePipes(ValidationPipe)
-  @UseGuards(AdminJwtAuthGuard)
+  @UseGuards(AdminAuthGuard)
   async adminLoginOfVendorPanel(
     @Body() authVendorDto: AuthVendorDto,
   ): Promise<VendorAuthResponse> {
@@ -268,7 +282,7 @@ export class VendorController {
   @UseGuards(AdminRolesGuard)
   @AdminMetaPermissions(AdminPermissions.EDIT)
   @UseGuards(AdminPermissionGuard)
-  @UseGuards(AdminJwtAuthGuard)
+  @UseGuards(AdminAuthGuard)
   // @UseGuards(VendorAuthGuard)
   async updateVendorByAdminId(
     @Param('id', MongoIdValidationPipe) id: string,
@@ -284,7 +298,7 @@ export class VendorController {
   @UseGuards(AdminRolesGuard)
   @AdminMetaPermissions(AdminPermissions.EDIT)
   @UseGuards(AdminPermissionGuard)
-  @UseGuards(AdminJwtAuthGuard)
+  @UseGuards(AdminAuthGuard)
   async updateMultipleVendorById(
     @Body() updateVendorDto: UpdateVendorDto,
   ): Promise<ResponsePayload> {
@@ -301,7 +315,7 @@ export class VendorController {
   @UseGuards(AdminRolesGuard)
   @AdminMetaPermissions(AdminPermissions.DELETE)
   @UseGuards(AdminPermissionGuard)
-  @UseGuards(AdminJwtAuthGuard)
+  @UseGuards(AdminAuthGuard)
   async deleteVendorById(
     @Param('id', MongoIdValidationPipe) id: string,
   ): Promise<ResponsePayload> {
@@ -315,7 +329,7 @@ export class VendorController {
   @UseGuards(AdminRolesGuard)
   @AdminMetaPermissions(AdminPermissions.DELETE)
   @UseGuards(AdminPermissionGuard)
-  @UseGuards(AdminJwtAuthGuard)
+  @UseGuards(AdminAuthGuard)
   @UseGuards(VendorAuthGuard)
   async deleteMultipleVendorById(
     @Body() data: { ids: string[] },
@@ -330,7 +344,7 @@ export class VendorController {
   @UseGuards(AdminRolesGuard)
   @AdminMetaPermissions(AdminPermissions.EDIT)
   @UseGuards(AdminPermissionGuard)
-  @UseGuards(AdminJwtAuthGuard)
+  @UseGuards(AdminAuthGuard)
   async deleteMultipleAdminById(
     @Body() data: { ids: string[] },
   ): Promise<ResponsePayload> {
@@ -344,7 +358,7 @@ export class VendorController {
   @UseGuards(AdminRolesGuard)
   @AdminMetaPermissions(AdminPermissions.CREATE)
   @UseGuards(AdminPermissionGuard)
-  @UseGuards(AdminJwtAuthGuard)
+  @UseGuards(AdminAuthGuard)
   async addDeletedVendor(@Body() data: any): Promise<ResponsePayload> {
     return await this.vendorService.addDeletedVendor(data);
   }

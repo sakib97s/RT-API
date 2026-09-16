@@ -52,10 +52,13 @@ export class CarouselService {
     addCarouselDto: AddCarouselDto,
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
-        _id: shop,
-        'users._id': vendor._id,
-      });
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin
+        ? await this.shopModel.exists({ _id: shop })
+        : await this.shopModel.exists({
+            _id: shop,
+            'users._id': vendor._id,
+          });
 
       if (!fShop) {
         return {
@@ -129,10 +132,13 @@ export class CarouselService {
     select: string,
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
-        _id: shop,
-        'users._id': vendor._id,
-      });
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin
+        ? await this.shopModel.exists({ _id: shop })
+        : await this.shopModel.exists({
+            _id: shop,
+            'users._id': vendor._id,
+          });
 
       if (!fShop) {
         return {
@@ -528,10 +534,13 @@ export class CarouselService {
     try {
       // const { name } = updateCarouselDto;
 
-      const fShop = await this.shopModel.exists({
-        _id: shop,
-        'users._id': vendor._id,
-      });
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin
+        ? await this.shopModel.exists({ _id: shop })
+        : await this.shopModel.exists({
+            _id: shop,
+            'users._id': vendor._id,
+          });
 
       if (!fShop) {
         return {
@@ -542,20 +551,6 @@ export class CarouselService {
 
       let finalSlug: string;
       const fData = await this.carouselModel.findOne({ _id: id, shop: shop });
-
-      // Check Slug
-      // if (fData?.name.trim() !== name.trim()) {
-      //   const newSlug = this.utilsService.transformToSlug(name);
-
-      //   const isExists = await this.carouselModel.exists({ slug: newSlug });
-      //   if (isExists) {
-      //     finalSlug = this.utilsService.transformToSlug(name, true);
-      //   } else {
-      //     finalSlug = newSlug;
-      //   }
-      // } else {
-      //   finalSlug = fData.slug;
-      // }
 
       const finalData = {
         ...updateCarouselDto,
@@ -582,10 +577,13 @@ export class CarouselService {
     updateCarouselDto: UpdateCarouselDto,
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
-        _id: shop,
-        'users._id': vendor._id,
-      });
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin
+        ? await this.shopModel.exists({ _id: shop })
+        : await this.shopModel.exists({
+            _id: shop,
+            'users._id': vendor._id,
+          });
 
       if (!fShop) {
         return {
@@ -597,10 +595,6 @@ export class CarouselService {
       if (ids && ids.length) {
         const mIds = ids.map((m) => new ObjectId(m));
 
-        // Delete No Multiple Action Data
-        // if (updateCarouselDto.slug) {
-        //   delete updateCarouselDto.slug;
-        // }
         await this.carouselModel.updateMany(
           { _id: { $in: mIds } },
           { $set: updateCarouselDto },
@@ -627,10 +621,13 @@ export class CarouselService {
     ids: string[],
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
-        _id: shop,
-        'users._id': vendor._id,
-      });
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin
+        ? await this.shopModel.exists({ _id: shop })
+        : await this.shopModel.exists({
+            _id: shop,
+            'users._id': vendor._id,
+          });
 
       if (!fShop) {
         return {
@@ -655,10 +652,13 @@ export class CarouselService {
     ids: string[],
   ): Promise<ResponsePayload> {
     try {
-      const fShop = await this.shopModel.exists({
-        _id: shop,
-        'users._id': vendor._id,
-      });
+      const isAdmin = vendor.role === 'super_admin' || vendor.role === 'admin' || vendor.role === 'editor';
+      const fShop = isAdmin
+        ? await this.shopModel.exists({ _id: shop })
+        : await this.shopModel.exists({
+            _id: shop,
+            'users._id': vendor._id,
+          });
 
       if (!fShop) {
         return {

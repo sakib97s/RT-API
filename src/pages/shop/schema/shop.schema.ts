@@ -310,3 +310,38 @@ export const ShopSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+const knownAdminIds = new Set<string>();
+
+ShopSchema.pre(['find', 'findOne', 'countDocuments'], async function () {
+  const filter = this.getFilter();
+  if (filter && filter['users._id']) {
+    try {
+      const rawUserId = filter['users._id'];
+      const userIdStr = rawUserId?.toString?.() || String(rawUserId);
+      if (!userIdStr) return;
+
+      let isAdmin = knownAdminIds.has(userIdStr);
+      if (!isAdmin) {
+        const userObjectId = mongoose.Types.ObjectId.isValid(userIdStr)
+          ? new mongoose.Types.ObjectId(userIdStr)
+          : rawUserId;
+        const adminDoc = await this.model.db.collection('admins').findOne(
+          { $or: [{ _id: userObjectId }, { _id: userIdStr }] },
+          { projection: { _id: 1 } },
+        );
+        if (adminDoc) {
+          knownAdminIds.add(userIdStr);
+          isAdmin = true;
+        }
+      }
+
+      if (isAdmin) {
+        delete filter['users._id'];
+        this.setQuery(filter);
+      }
+    } catch (e) {
+      console.error('ShopSchema pre middleware error:', e);
+    }
+  }
+});
