@@ -54,17 +54,16 @@ export class AdminAuthGuard implements CanActivate {
         secret: jwtSecret,
       });
 
-      if (!payload?.sessionId)
-        throw new UnauthorizedException('Invalid session');
-
-      // ✅ session lookup without provider injection
-      const session: any = await this.sessionModel
-        .findById(payload.sessionId)
-        .lean();
-      if (!session) throw new UnauthorizedException('Session not found');
-      if (session.revokedAt) throw new UnauthorizedException('Session revoked');
-      if (new Date(session.expiresAt) <= new Date())
-        throw new UnauthorizedException('Session expired');
+      if (payload?.sessionId) {
+        // ✅ session lookup without provider injection
+        const session: any = await this.sessionModel
+          .findById(payload.sessionId)
+          .lean();
+        if (!session) throw new UnauthorizedException('Session not found');
+        if (session.revokedAt) throw new UnauthorizedException('Session revoked');
+        if (new Date(session.expiresAt) <= new Date())
+          throw new UnauthorizedException('Session expired');
+      }
 
       request['user'] = payload;
       return true;
