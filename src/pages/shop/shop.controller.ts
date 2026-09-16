@@ -46,6 +46,16 @@ export class ShopController {
    */
 
   @Version(VERSION_NEUTRAL)
+  @Get('/init-default-shop')
+  async initDefaultShop(): Promise<ResponsePayload> {
+    await this.shopService.ensureDefaultShop();
+    return {
+      success: true,
+      message: 'Default shop initialized successfully!',
+    };
+  }
+
+  @Version(VERSION_NEUTRAL)
   @Post('/change-domain-by-vendor')
   @UsePipes(ValidationPipe)
   @UseGuards(VendorAuthGuard)

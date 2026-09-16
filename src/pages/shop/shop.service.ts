@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  OnApplicationBootstrap,
 } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model, Types } from 'mongoose';
@@ -121,6 +122,84 @@ export class ShopService {
     private readonly bulkSmsService: BulkSmsService,
     private readonly emailService: EmailService,
   ) { }
+
+  async onApplicationBootstrap() {
+    await this.ensureDefaultShop();
+  }
+
+  async ensureDefaultShop() {
+    try {
+      const defaultShopId = '6a4027ff8f92d99c83aa6e87';
+      const defaultObjectId = new Types.ObjectId(defaultShopId);
+
+      const existingShop = await this.connection
+        .collection('shops')
+        .findOne({ _id: defaultObjectId });
+
+      const admins = await this.connection
+        .collection('admins')
+        .find({})
+        .toArray();
+
+      const adminUsers = admins.map((a) => ({
+        _id: a._id,
+        username: a.username,
+        email: a.email || `${a.username}@romeempiretours.com`,
+        phoneNo: a.phoneNo || '',
+        role: a.role || 'admin',
+      }));
+
+      if (!existingShop) {
+        this.logger.log(
+          `Default shop ${defaultShopId} not found in DB. Auto-creating default shop...`,
+        );
+        const ownerId = admins[0]?._id || defaultObjectId;
+        const shopDoc = {
+          _id: defaultObjectId,
+          websiteName: 'Rome Empire Tours',
+          domain: 'romeempiretours.com',
+          affiliateAccess: true,
+          isTrailPrice: false,
+          theme: { images: [] },
+          dateString: new Date().toISOString().split('T')[0],
+          owner: ownerId,
+          users: adminUsers.length
+            ? adminUsers
+            : [{ _id: ownerId, username: 'superadmin', role: 'admin' }],
+          buildStatus: 'complete',
+          registeredBy: 'self',
+          trialPeriod: 0,
+          paymentStatus: 'custom',
+          status: 'publish',
+          startDate: new Date().toISOString().split('T')[0],
+          minWithdrawAmount: 0,
+          clientNotes: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        await this.connection.collection('shops').insertOne(shopDoc);
+        this.logger.log(`Default shop ${defaultShopId} created successfully!`);
+      } else {
+        for (const admin of admins) {
+          await this.connection.collection('shops').updateOne(
+            { _id: defaultObjectId, 'users._id': { $ne: admin._id } },
+            {
+              $push: {
+                users: {
+                  _id: admin._id,
+                  username: admin.username,
+                  email: admin.email || `${admin.username}@romeempiretours.com`,
+                  role: admin.role || 'admin',
+                },
+              },
+            } as any,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Error ensuring default shop: ${error.message}`);
+    }
+  }
 
   /**
    * Main Ui
