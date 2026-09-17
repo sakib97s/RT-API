@@ -90,6 +90,14 @@ export const ReviewSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    title: {
+      type: String,
+      required: false,
+    },
+    email: {
+      type: String,
+      required: false,
+    },
     reviewBy: {
       type: String,
       required: false,

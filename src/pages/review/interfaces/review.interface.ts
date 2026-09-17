@@ -6,6 +6,8 @@ export type Review = {
   user?: string | User;
   vendor?: string | any;
   name?: string;
+  title?: string;
+  email?: string;
   reviewDate: string;
   review: string;
   rating: number;

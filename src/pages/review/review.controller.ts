@@ -48,6 +48,16 @@ export class ReviewController {
    * deleteReviewByUser()
    */
 
+  @Version(VERSION_NEUTRAL)
+  @Post('/add-client-review')
+  @UsePipes(ValidationPipe)
+  async addClientReview(
+    @Body() addReviewDto: AddReviewDto,
+    @Query('shop') shop: string,
+  ): Promise<ResponsePayload> {
+    return await this.reviewService.addClientReview(shop, addReviewDto);
+  }
+
   @Post('/add-review-by-user')
   @UsePipes(ValidationPipe)
   @UseGuards(UserAuthGuard)

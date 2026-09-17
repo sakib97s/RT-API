@@ -120,6 +120,45 @@ export class ReviewService {
     }
   }
 
+  async addClientReview(
+    shop: string,
+    addReviewDto: AddReviewDto,
+  ): Promise<ResponsePayload> {
+    try {
+      let shopId = shop;
+      if (!shopId && addReviewDto['shop']) {
+        shopId = addReviewDto['shop'];
+      }
+
+      const mData: any = {
+        name: addReviewDto.name || 'Traveler',
+        userName: addReviewDto.name || 'Traveler',
+        title: addReviewDto.title || '',
+        email: addReviewDto.email || '',
+        review: addReviewDto.review,
+        rating: Number(addReviewDto.rating) || 5,
+        reviewDate: new Date(),
+        reviewBy: 'client',
+        status: false,
+        images: addReviewDto.images || [],
+      };
+
+      if (shopId) {
+        mData.shop = new ObjectId(shopId);
+      }
+
+      const saveData = await this.reviewModel.create(mData);
+
+      return {
+        success: true,
+        message: 'Review submitted successfully and is awaiting approval!',
+        data: saveData,
+      } as ResponsePayload;
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async addReviewByVendor(
     shop: string,
     user: User,
@@ -538,6 +577,11 @@ export class ReviewService {
 
       if (filter['vendor'] && typeof filter['vendor'] != 'object') {
         filter['vendor'] = new ObjectId(filter['vendor']);
+      }
+      if (filter['status'] === 'publish' || filter['status'] === true) {
+        filter['status'] = { $in: [true, 'publish'] };
+      } else if (filter['status'] === 'pending' || filter['status'] === false) {
+        filter['status'] = { $in: [false, 'pending', null] };
       }
       mFilter = { ...mFilter, ...filter };
     }
@@ -986,6 +1030,17 @@ export class ReviewService {
         JSON.stringify(await this.reviewModel.findById(updateReviewDto?._id)),
       );
 
+      if (!data?.product?._id) {
+        await this.reviewModel.updateOne(
+          { _id: updateReviewDto._id },
+          { $set: updateReviewDto },
+        );
+        return {
+          success: true,
+          message: 'Review updated successfully',
+        } as ResponsePayload;
+      }
+
       if (data.status === updateReviewDto.status) {
         await this.reviewModel.updateOne(
           { _id: updateReviewDto },
@@ -1272,6 +1327,17 @@ export class ReviewService {
 
       const oldRating = data?.rating; // Store old rating
       const newRating = updateReviewDto?.rating;
+
+      if (!data?.product?._id) {
+        await this.reviewModel.updateOne(
+          { _id: updateReviewDto._id },
+          { $set: updateReviewDto },
+        );
+        return {
+          success: true,
+          message: 'Review updated successfully',
+        } as ResponsePayload;
+      }
 
       // If the status of the review is the same, just update the review
       if (data?.status === updateReviewDto?.status) {

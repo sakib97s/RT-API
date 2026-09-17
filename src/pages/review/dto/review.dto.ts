@@ -53,6 +53,18 @@ export class AddReviewDto {
   @IsOptional()
   @IsString()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  title: string;
+
+  @IsOptional()
+  @IsString()
+  email: string;
+
+  @IsOptional()
+  @IsArray()
+  images: string[];
 }
 
 export class FilterReviewDto {
